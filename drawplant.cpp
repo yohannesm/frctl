@@ -52,14 +52,26 @@ void drawLeaf(void) {
 	/* ADD YOUR CODE to make the 2D leaf a 3D extrusion */
 	glColor3f(0.1,0.9,0.1); 
 	glBegin(GL_POLYGON);
-	glVertex2f(0.0,0.0);
-	glVertex2f(1.0,0.7);
-	glVertex2f(1.3,1.8);
-	glVertex2f(1.0,2.8);
-	glVertex2f(0.0,4.0);
-	glVertex2f(-1.0,2.8);
-	glVertex2f(-1.3,1.8);
-	glVertex2f(-1.0,0.7);
+	
+	glVertex3f(0.0,0.0,0.0);
+	glVertex3f(1.0,0.7,0.0);
+	glVertex3f(1.3,1.8,0.0);
+	glVertex3f(1.0,2.8,0.0);
+	glVertex3f(0.0,4.0,0.0);
+	glVertex3f(-1.0,2.8,0.0);
+	glVertex3f(-1.3,1.8,0.0);
+	glVertex3f(-1.0,0.7,0.0);
+	glEnd();
+	
+	glBegin(GL_POLYGON);
+	glVertex3f(0.0,0.0,0.1);
+	glVertex3f(1.0,0.7,0.1);
+	glVertex3f(1.3,1.8,0.1);
+	glVertex3f(1.0,2.8,0.1);
+	glVertex3f(0.0,4.0,0.1);
+	glVertex3f(-1.0,2.8,0.1);
+	glVertex3f(-1.3,1.8,0.1);
+	glVertex3f(-1.0,0.7,0.1);
 	glEnd();
 }
 
