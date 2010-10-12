@@ -29,6 +29,11 @@ int Y_OFF = 10;	/* window y offset */
 /* local function declarations */
 void display(void);
 void init(void);
+int endPlant(int);
+void myKeyHandler(unsigned char ch, int x, int y);
+void rotateCamera(double deg, int axis);
+
+enum Axis {X_AXIS, Y_AXIS, Z_AXIS};
 
 int main (int argc, char** argv) {
   glutInit(&argc,argv);
@@ -38,6 +43,7 @@ int main (int argc, char** argv) {
   glutCreateWindow("plant");
   init();
   glutDisplayFunc(display);
+  glutKeyboardFunc(myKeyHandler); 
   glutMainLoop();
   return 0;
 }
@@ -49,6 +55,101 @@ void init() {
   glOrtho(-40.0, 40.0, -40.0, 40.0, -10.0, 10.0);
 }
 
+/*
+ * The rotation is specified in degrees about a certain axis of
+ * the original model.
+ *
+ * AXIS should be either X_AXIS, Y_AXIS, or Z_AXIS.
+ *
+ * Positive degrees rotate in the counterclockwise direction.
+ */
+void rotateCamera(double deg, Axis a) {
+	double x, y, z;
+
+	x = 0;
+	y = 0;
+	z = 0;
+
+	if (a == X_AXIS) {
+		x = 1.0f;
+	} else if (a == Y_AXIS) {
+		y = 1.0f;
+	} else if (a == Z_AXIS) {
+		z = 1.0f;
+	}
+ 
+	glRotatef(deg, x, y, z);
+}
+
+/* Handle user input */
+void myKeyHandler(unsigned char ch, int x, int y) {
+	switch(ch) {
+
+#if 0
+'/' - rotates the plant about its y-axis counterclockwise (i.e. when you are looking at the plant from the top down, the plant rotates counterclockwise).
+'?' - rotates the plant about its y-axis clockwise.
+'q' - quits the program
+#endif
+		case '/':
+		    // rotate ccw about y axis
+			break;
+			
+		case '?':
+		    // rotate cw about y axis
+		    break;
+		    
+		case ',':
+			rotateCamera(5, X_AXIS);
+			break;
+
+		case '<':
+			rotateCamera(-5, X_AXIS);
+			break;
+
+		case '.':
+			rotateCamera(5, Y_AXIS);
+			break;
+
+		case '>':
+			rotateCamera(-5, Y_AXIS);
+			break;
+
+		case ';':
+			rotateCamera(5, Z_AXIS);
+			break;
+
+		case ':':
+			rotateCamera(-5, Z_AXIS);
+			break;
+
+
+        case 'q':
+            endPlant(0);
+            break;
+
+		default:
+			/* Unrecognized key press, just return */
+			return;
+
+			break;
+	}
+
+	/*
+	 * If control reaches here, the key press was recognized.  Refresh
+	 * the screen, since most key presses change the display in some way.
+	 */
+	//myDisplay();
+
+	return;
+}
+
+
+int endPlant(int status) {
+  printf("\nQuitting plant.\n\n");
+  fflush(stdout);
+
+  exit(status);
+}
 
 void display() {
 	glEnable(GL_DEPTH_TEST);
