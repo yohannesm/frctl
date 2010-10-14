@@ -14,6 +14,7 @@
 #include <assert.h>
 
 #include <iostream>
+#include "Matrix.h"
 #include "common.h"
 #include "drawplant.h"
 #include "readppm.h"
@@ -46,7 +47,16 @@ void load3DMatrix(
 		GLfloat m20, GLfloat m21, GLfloat m22, GLfloat m23,
 		GLfloat m30, GLfloat m31, GLfloat m32, GLfloat m33) {
 
-	/* ADD YOUR CODE */
+	GLfloat M3D [16];  
+
+	M3D[0] = m00;  M3D[1] = m10; M3D[2] = m20; M3D[3] = m30;
+	M3D[4] = m01;  M3D[5] = m11; M3D[6] = m21; M3D[7] = m31;
+	M3D[8] = m02;  M3D[9] = m12; M3D[10] = m22; M3D[11] = m32;
+	M3D[12] = m03; M3D[13] = m13; M3D[14] = m23; M3D[15] = m33;
+
+	glMatrixMode(GL_MODELVIEW);
+	glLoadMatrixf(M3D);
+
 }
 
 void drawLeaf(void) {
@@ -111,47 +121,52 @@ void drawPlant(void) {
 	drawBranch();
 }
 
-void zero_vec(GLfloat* vec, int dim){
+void zero_mat(GLfloat* vec, int dim){
      for(int i=0; i<dim; ++i){
      	vec[i] = 0;
      }
 }
 
-void zero_mat(GLfloat** mat, int dim){
-     for(int i=0; i<dim; ++i){
-     	for(int j=0; j<dim; ++j){
-     		mat[i][j] = 0;
-     }
-    }
-}
 
-void mat_multiplyv(GLfloat *matrix[4], GLfloat* vector, int dim, GLfloat* result ){
-   zero_vec(result, dim);
+void mat_multiplyv(GLfloat* matrix, GLfloat* vector, int dim, GLfloat* result ){
+   zero_mat(result, dim);
    for(int row=0; row<dim; ++row){
    	for(int col=0; col<dim; ++col){
-	 result[row] += matrix[row][col] * vector[col];
+	 result[row] += matrix[(row*dim+col)] * vector[col];
 	}
    }
+}
+
+void mat_multiplym(GLfloat* m1, GLfloat* m2, int dim, GLfloat* result ){
+   zero_mat(result, dim);
+   for(int i=0; i < dim; i++){
+     for(int row=0; row<dim; ++row){
+   	for(int col=0; col<dim; ++col){
+	 result[i*dim+row] += m1[(row*dim+col)] * m2[col*dim + row];
+	}
+   }
+   }
+}
+
+void print_mat(GLfloat* mat, int dim){
+     std::cout << "[ ";
+     for(int i=0; i<dim; ++i){
+      for(int j=0; j<dim; ++j){
+     	std::cout << mat[(i*dim+j)] << " ";
+	}
+     std::cout << std::endl;
+    }
+    std:: cout << "] ";
+     std::cout << std::endl;
 }
 
 void print_vec(GLfloat* vec, int dim){
      std::cout << "[ ";
      for(int i=0; i<dim; ++i){
-     	std::cout << vec[i] << " " ;
+     	std::cout << vec[i] << " ";
      }
     std:: cout << "] ";
      std::cout << std::endl;
-}
-
-void print_mat(GLfloat** mat, int dim){
-     for(int i=0; i<dim; ++i){
-     std::cout << "[ ";
-     	for(int j=0; j<dim; ++j){
-     		std::cout << mat[i][j] << " ";
-     }
-    std:: cout << "] ";
-     std::cout << std::endl;
-    }
 }
 
 /* end of drawplant.c */

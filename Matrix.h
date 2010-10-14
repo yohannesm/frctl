@@ -446,6 +446,23 @@ class Matrix {
 	size_type cols() const{
 	    return C;
 	}
+        
+        // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+        // Matrix multiply 
+        // -----------
+
+        /**
+	 * multiplying the matrix with a vector
+         */
+        Matrix& mult_vec (const T* rhs) {
+            for(unsigned int i=0; i < R; i++){
+	        for(unsigned int j=0; j < C; j++){
+			m[i][j] *= rhs[j];
+			}
+	    	}
+		return *this;
+	}
+
 	  };// end class Matrix
 // -----
 // apply
