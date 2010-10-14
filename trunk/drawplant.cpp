@@ -4,7 +4,7 @@
  * Contains the drawing routine and related helper functions for the
  * L-system fractal plant.  Starter code for Project 2.
  *
- * Group Members: <FILL IN>
+ * Group Members: Yohannes Himawan, David Lee
  */
 
 #ifdef _WIN32
@@ -13,6 +13,7 @@
 #include <math.h>
 #include <assert.h>
 
+#include <iostream>
 #include "common.h"
 #include "drawplant.h"
 #include "readppm.h"
@@ -108,6 +109,49 @@ void drawPlant(void) {
 	drawLeaf();
 
 	drawBranch();
+}
+
+void zero_vec(GLfloat* vec, int dim){
+     for(int i=0; i<dim; ++i){
+     	vec[i] = 0;
+     }
+}
+
+void zero_mat(GLfloat** mat, int dim){
+     for(int i=0; i<dim; ++i){
+     	for(int j=0; j<dim; ++j){
+     		mat[i][j] = 0;
+     }
+    }
+}
+
+void mat_multiplyv(GLfloat *matrix[4], GLfloat* vector, int dim, GLfloat* result ){
+   zero_vec(result, dim);
+   for(int row=0; row<dim; ++row){
+   	for(int col=0; col<dim; ++col){
+	 result[row] += matrix[row][col] * vector[col];
+	}
+   }
+}
+
+void print_vec(GLfloat* vec, int dim){
+     std::cout << "[ ";
+     for(int i=0; i<dim; ++i){
+     	std::cout << vec[i] << " " ;
+     }
+    std:: cout << "] ";
+     std::cout << std::endl;
+}
+
+void print_mat(GLfloat** mat, int dim){
+     for(int i=0; i<dim; ++i){
+     std::cout << "[ ";
+     	for(int j=0; j<dim; ++j){
+     		std::cout << mat[i][j] << " ";
+     }
+    std:: cout << "] ";
+     std::cout << std::endl;
+    }
 }
 
 /* end of drawplant.c */

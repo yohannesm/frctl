@@ -36,6 +36,16 @@ void rotateCamera(double deg, int axis);
 enum Axis {X_AXIS, Y_AXIS, Z_AXIS};
 
 int main (int argc, char** argv) {
+  GLfloat m1[4][4] = { {1, 1, 1, 1}, 
+		      {1, 1, 1, 1},
+		      {1, 1, 1, 1},
+		      {1, 1, 1, 1}};
+ GLfloat v1[4] = {1, 1, 1, 1};
+ GLfloat result[4];
+ mat_multiplyv(m1, v1, 4, result);
+ print_vec(result, 4);
+ 
+
   glutInit(&argc,argv);
   glutInitWindowSize(W, H);
   glutInitWindowPosition(X_OFF, Y_OFF);

@@ -6,7 +6,22 @@
  * instructions for compiling, etc., if you used something besides the
  * standard Makefile.
  *
- * Group Members: <FILL IN>
- * Email Addresses:
+ * Group Members: Yohannes Himawan, David Lee
+ * Email Addresses:yohannes.marcell@gmail.com dlee210151@gmail.com
  */
 
+
+L-system:
+F = move forward
+LO, L1, L2 = draw leaf
+T = draw terminating Leaf
++ = turn right 
+- = turn left
+[ = push
+] = pop
+S = scale by 1/2
+
+Axiom: L0
+1. L0 -> F [ - F S L1] F [ + F S L2 ] F L0
+2. L1 -> F [ - F S L1 ] F [ + F T ] F L1
+3. L2 -> F [ - F T ] F [ + F S L2 ] F L2
