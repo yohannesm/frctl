@@ -45,7 +45,7 @@ int main (int argc, char** argv) {
  GLfloat result[4];
  mat_multiplyv(m1, v1, 4, result);
  print_vec(result, 4);
- */
+ 
   GLfloat m1[16] = { 1, 1, 1, 1, 
 		      1, 1, 1, 1,
 		      1, 1, 1, 1,
@@ -57,8 +57,7 @@ int main (int argc, char** argv) {
  GLfloat result[16];
  mat_multiplym(m1, m2, 4, result);
  print_mat(result, 4);
- 
-#if 0
+ */
   glutInit(&argc,argv);
   glutInitWindowSize(W, H);
   glutInitWindowPosition(X_OFF, Y_OFF);
@@ -68,7 +67,6 @@ int main (int argc, char** argv) {
   glutDisplayFunc(display);
   glutKeyboardFunc(myKeyHandler); 
   glutMainLoop();
-  #endif
   return 0;
   
 }

@@ -106,16 +106,21 @@ void drawBranch(void) {
 void drawPlant(void) {
 
 	/* Load a hard-coded rotation matrix of -30 degrees about positive z */
-	/* This matrix is only here as an example, and can be removed */
+	/* This matrix is only here as an example, and can be removed 
 	load2DMatrix(
 	       sqrt(3.0)/2.0, -1.0/2.0,      0.0,
 		   1.0/2.0,       sqrt(3.0)/2.0, 0.0,
 		   0.0,           0.0,           1.0);
 
-	/*
+	
 	 * The location of the leaf and branch will not look right until
 	 * transformation matrices are implmented.
 	 */
+	load3DMatrix(
+		1 , 0, 0, 5,
+		0, 1, 0, 5, 
+		0, 0, 1, 0, 
+		0, 0, 0, 1);
 	drawLeaf();
 
 	drawBranch();
