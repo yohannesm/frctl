@@ -4,11 +4,10 @@
 /* Functions implemented in drawplant.cpp */
 
 void drawPlant(void);
-void  mat_multiplyv(GLfloat *[4], GLfloat*, int , GLfloat*);
-void mat_multiplym(GLfloat **, GLfloat** , int, GLfloat** );
-void zero_vec(GLfloat* vec, int dim);
-void zero_mat(GLfloat** mat, int dim);
-void print_mat(GLfloat** mat, int dim);
+void zero_mat(GLfloat* vec, int dim);
+void print_mat(GLfloat* mat, int dim);
 void print_vec(GLfloat* mat, int dim);
+void mat_multiplyv(GLfloat* matrix, GLfloat* vector, int dim, GLfloat* result );
+void mat_multiplym(GLfloat* m1, GLfloat* m2, int dim, GLfloat* result );
 
 #endif	/* _DRAWPLANT_H_ */
