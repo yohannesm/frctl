@@ -19,7 +19,12 @@
 #include "drawplant.h"
 #include "readppm.h"
 
+#include <stack>
+
 #define PI 3.14159265
+
+std::stack<GLfloat*> matrixStack;
+GLfloat curMatrix[16];
 
 /* Takes a 2D matrix in row-major order, and loads the 3D matrix which
    does the same trasformation into the OpenGL MODELVIEW matrix, in
@@ -61,20 +66,63 @@ void load3DMatrix(
 
 }
 
-void translate(GLfloat x, GLfloat y, int z = 1){
-	load3DMatrix(
-		1.0 , 0.0, 0.0, x,
-		0.0, 1.0, 0.0, y, 
-		0.0, 0.0, 1, z,
-		0.0, 0.0, 0.0, 1);
+void load3DMatrix(GLfloat* temp)
+{
+    load3DMatrix(temp[0], temp[1], temp[2], temp[3],
+                    temp[4], temp[5], temp[6], temp[7],
+                    temp[8], temp[9], temp[10], temp[11],
+                    temp[12], temp[13], temp[14], temp[15]);
+}
+void initMatrixStack ()
+{               
+    GLfloat temp[16];
+    mat_copy(temp, ident);
+    matrixStack.push(temp);
+    load3DMatrix(temp[0], temp[1], temp[2], temp[3],
+                    temp[4], temp[5], temp[6], temp[7],
+                    temp[8], temp[9], temp[10], temp[11],
+                    temp[12], temp[13], temp[14], temp[15]);
+    mat_copy(curMatrix, ident);
 }
 
-void scale(int x, int y, int z = 1){
-	load3DMatrix(
+void push()
+{
+    GLfloat pushMatrix[16];
+    mat_copy(pushMatrix, curMatrix);
+    matrixStack.push(pushMatrix);
+}
+
+void pop()
+{
+    mat_copy(curMatrix, matrixStack.top());
+    matrixStack.pop(); 
+}
+
+void translate(GLfloat x, GLfloat y, GLfloat z = 0.0){
+
+	GLfloat t_mat[16] = {
+		1.0 , 0.0, 0.0, x,
+		0.0, 1.0, 0.0, y, 
+		0.0, 0.0, 1.0, z,
+		0.0, 0.0, 0.0, 1.0};
+		
+    GLfloat result[16];
+    mat_multiplym(t_mat, curMatrix, 4, result);
+    mat_copy(curMatrix, result);
+    load3DMatrix(curMatrix);
+}
+
+void scale(GLfloat x, GLfloat y, GLfloat z = 1.0){
+	GLfloat s_mat[16] = {
 		x , 0.0, 0.0, 0.0,
 		0.0, y, 0.0, 0.0, 
 		0.0, 0.0, z, 0.0,
-		0.0, 0.0, 0.0, 1.0);
+		0.0, 0.0, 0.0, 1.0};
+		
+    GLfloat result[16];
+    mat_multiplym(s_mat, curMatrix, 4, result);
+    mat_copy(curMatrix, result);
+    load3DMatrix(curMatrix);
 }
 
 void rotatez(GLfloat angle){
@@ -113,6 +161,7 @@ void drawLeaf(void) {
 	glVertex3f(-1.0,0.7,0.0);
 	glEnd();
 	
+#if 0
 	glBegin(GL_POLYGON);
 	glVertex3f(0.0,0.0,0.1);
 	glVertex3f(1.0,0.7,0.1);
@@ -123,6 +172,7 @@ void drawLeaf(void) {
 	glVertex3f(-1.3,1.8,0.1);
 	glVertex3f(-1.0,0.7,0.1);
 	glEnd();
+	#endif
 }
 
 void drawBranch(void) {
@@ -144,27 +194,82 @@ void drawBranch(void) {
  */
 void drawPlant(void) {
 
+
 	/* Load a hard-coded rotation matrix of -30 degrees about positive z */
 	/* This matrix is only here as an example, and can be removed 
+#if 0
 	load2DMatrix(
 	       sqrt(3.0)/2.0, -1.0/2.0,      0.0,
 		   1.0/2.0,       sqrt(3.0)/2.0, 0.0,
 		   0.0,           0.0,           1.0);
-
+#endif
 	
 	 * The location of the leaf and branch will not look right until
 	 * transformation matrices are implmented.
 	 */
+
+    //load2DMatrix(1,0,10,0,1,0,0,0,1);
+    //load2DMatrix(0, -1, 0, -1, 0, 0, 0, 0, 1);
+/*
+	load3DMatrix(
+		1 , 0, 0, 5,
+		0, 1, 0, 5, 
+		0, 0, 1, 0, 
+		0, 0, 0, 1);
+
 	scale(3, 3);
 	rotatez(90);
-	drawLeaf();
+*/
+    initMatrixStack();
 
-	drawBranch();
+#if 0
+    push();
+    translate(10,0,0);
+    scale(2, 1);
+	drawLeaf();
+    pop();
+    
+    push();
+    translate(-3,0,0);
+    scale(1, 2);
+	drawLeaf();
+    pop();
+#endif
+
+    std::cout<<"init curmat:"<<std::endl;
+    print_mat(curMatrix, 4);
+    //glPushMatrix();
+    push();
+    //glTranslatef(-10,0,0);
+    translate(10,0,0);
+    drawLeaf();
+    pop();
+    
+    std::cout<<"curmat1:"<<std::endl;
+    print_mat(curMatrix, 4);
+    //glPopMatrix();
+	//drawBranch();
+    
+    //glPushMatrix();
+    push();
+    //glTranslatef(10,0,0);
+    translate(-10,0,0);
+    drawLeaf();
+    pop();
+
+    std::cout<<"curmat2:"<<std::endl;
+    print_mat(curMatrix, 4);
+    //glPopMatrix();
+	//drawBranch();
+	
 }
 
+
+
+#if 1
 void zero_mat(GLfloat* vec, int dim){
-     for(int i=0; i<dim; ++i){
-     	vec[i] = 0;
+     for(int i=0; i<dim*dim; ++i){
+     	vec[i] = 0.0;
      }
 }
 
@@ -179,14 +284,24 @@ void mat_multiplyv(GLfloat* matrix, GLfloat* vector, int dim, GLfloat* result ){
 }
 
 void mat_multiplym(GLfloat* m1, GLfloat* m2, int dim, GLfloat* result ){
-   zero_mat(result, dim);
-   for(int i=0; i < dim; i++){
-     for(int row=0; row<dim; ++row){
-   	for(int col=0; col<dim; ++col){
-	 result[i*dim+row] += m1[(row*dim+col)] * m2[col*dim + row];
-	}
-   }
-   }
+    zero_mat(result, dim);
+    //print_mat(result, 4);
+    //print_mat(m1, 4);
+    //print_mat(m2, 4);
+    
+    for(int r_row = 0; r_row < dim; ++r_row)
+        for(int r_col=0; r_col < dim; ++r_col)
+            for(int k = 0; k < dim; ++k)
+                result[r_row * dim + r_col] += m1[r_row * dim + k] * m2[k * dim + r_col];
+                
+    //print_mat(result, 4);
+}
+
+void mat_copy(GLfloat* m1, const GLfloat* m2, int dim)
+{
+    for(int i=0; i<dim*dim; ++i){
+        m1[i] = m2[i];
+    }
 }
 
 void print_mat(GLfloat* mat, int dim){
@@ -209,5 +324,5 @@ void print_vec(GLfloat* vec, int dim){
     std:: cout << "] ";
      std::cout << std::endl;
 }
-
+#endif
 /* end of drawplant.c */

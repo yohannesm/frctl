@@ -15,7 +15,6 @@
 #include <string.h>
 #include <math.h>
 #include <assert.h>
-
 #include "common.h"
 #include "drawplant.h"
 
@@ -35,17 +34,27 @@ void rotateCamera(double deg, int axis);
 
 enum Axis {X_AXIS, Y_AXIS, Z_AXIS};
 
-int main (int argc, char** argv) {
-/*
+int main (int argc, char** argv) 
+{
+
+#if 0
+  GLfloat m1[4][4] = { {1, 1, 1, 1}, 
+		      {1, 1, 1, 1},
+		      {1, 1, 1, 1},
+		      {1, 1, 1, 1}};
+
+
   GLfloat m1[16] = { 1, 1, 1, 1, 
 		      1, 1, 1, 1,
 		      1, 1, 1, 1,
 		      1, 1, 1, 1};
+
  GLfloat v1[4] = {1, 1, 1, 1};
  GLfloat result[4];
  mat_multiplyv(m1, v1, 4, result);
  print_vec(result, 4);
- 
+ #endif
+ #if 0
   GLfloat m1[16] = { 1, 1, 1, 1, 
 		      1, 1, 1, 1,
 		      1, 1, 1, 1,
@@ -57,7 +66,7 @@ int main (int argc, char** argv) {
  GLfloat result[16];
  mat_multiplym(m1, m2, 4, result);
  print_mat(result, 4);
- */
+ #endif
   glutInit(&argc,argv);
   glutInitWindowSize(W, H);
   glutInitWindowPosition(X_OFF, Y_OFF);
@@ -178,7 +187,7 @@ void display() {
 	glEnable(GL_DEPTH_TEST);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-
+    
 	/* See drawplant.c for the definition of this routine */
 	drawPlant();
 
