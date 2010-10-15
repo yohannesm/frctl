@@ -19,6 +19,8 @@
 #include "drawplant.h"
 #include "readppm.h"
 
+#define PI 3.14159265
+
 /* Takes a 2D matrix in row-major order, and loads the 3D matrix which
    does the same trasformation into the OpenGL MODELVIEW matrix, in
    column-major order. */
@@ -58,6 +60,43 @@ void load3DMatrix(
 	glLoadMatrixf(M3D);
 
 }
+
+void translate(GLfloat x, GLfloat y, int z = 1){
+	load3DMatrix(
+		1.0 , 0.0, 0.0, x,
+		0.0, 1.0, 0.0, y, 
+		0.0, 0.0, 1, z,
+		0.0, 0.0, 0.0, 1);
+}
+
+void scale(int x, int y, int z = 1){
+	load3DMatrix(
+		x , 0.0, 0.0, 0.0,
+		0.0, y, 0.0, 0.0, 
+		0.0, 0.0, z, 0.0,
+		0.0, 0.0, 0.0, 1.0);
+}
+
+void rotatez(GLfloat angle){
+        GLfloat deg = angle*PI/180.0;
+	load3DMatrix(
+		cos(deg) , - sin(deg), 0.0, 0.0,
+		sin(deg),    cos(deg), 0.0, 0.0, 
+		0.0, 0.0, 1.0, 0.0,
+		0.0, 0.0, 0.0, 1);
+}
+
+
+void rotatey(GLfloat angle){
+        GLfloat deg = angle*PI/180.0;
+	load3DMatrix(
+		cos(deg) , 0.0 ,  sin(deg), 0.0, 
+		0.0,    1.0, 0.0, 0.0, 
+		- sin (deg), 0.0, cos (deg), 0.0,
+		0.0, 0.0, 0.0, 1.0);
+}
+
+
 
 void drawLeaf(void) {
 	/* ADD YOUR CODE to make the 2D leaf a 3D extrusion */
@@ -116,11 +155,8 @@ void drawPlant(void) {
 	 * The location of the leaf and branch will not look right until
 	 * transformation matrices are implmented.
 	 */
-	load3DMatrix(
-		1 , 0, 0, 5,
-		0, 1, 0, 5, 
-		0, 0, 1, 0, 
-		0, 0, 0, 1);
+	scale(3, 3);
+	rotatez(90);
 	drawLeaf();
 
 	drawBranch();
