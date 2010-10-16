@@ -77,7 +77,7 @@ void initMatrixStack ()
 {               
     GLfloat temp[16];
     mat_copy(temp, ident);
-    matrixStack.push(temp);
+    //matrixStack.push(temp);
     load3DMatrix(temp[0], temp[1], temp[2], temp[3],
                     temp[4], temp[5], temp[6], temp[7],
                     temp[8], temp[9], temp[10], temp[11],
@@ -89,13 +89,13 @@ void push()
 {
     GLfloat pushMatrix[16];
     mat_copy(pushMatrix, curMatrix);
-    matrixStack.push(pushMatrix);
+    //matrixStack.push(pushMatrix);
 }
 
 void pop()
 {
-    mat_copy(curMatrix, matrixStack.top());
-    matrixStack.pop(); 
+    //mat_copy(curMatrix, matrixStack.top());
+    //matrixStack.pop(); 
 }
 
 void translate(GLfloat x, GLfloat y, GLfloat z = 0.0){
