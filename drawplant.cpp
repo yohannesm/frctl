@@ -24,7 +24,7 @@
 #define PI 3.14159265
 
 std::stack<GLfloat*> matrixStack;
-GLfloat curMatrix[16];
+static GLfloat curMatrix[16];
 
 /* Takes a 2D matrix in row-major order, and loads the 3D matrix which
    does the same trasformation into the OpenGL MODELVIEW matrix, in
@@ -75,27 +75,39 @@ void load3DMatrix(GLfloat* temp)
 }
 void initMatrixStack ()
 {               
-    GLfloat temp[16];
+    GLfloat* temp = new GLfloat[16];
     mat_copy(temp, ident);
-    //matrixStack.push(temp);
+    matrixStack.push(temp);
     load3DMatrix(temp[0], temp[1], temp[2], temp[3],
                     temp[4], temp[5], temp[6], temp[7],
                     temp[8], temp[9], temp[10], temp[11],
                     temp[12], temp[13], temp[14], temp[15]);
+                    
+    //curMatrix = new GLfloat[16];
     mat_copy(curMatrix, ident);
+    //delete[] temp;
 }
 
 void push()
 {
-    GLfloat pushMatrix[16];
+    GLfloat* pushMatrix = new GLfloat[16];
     mat_copy(pushMatrix, curMatrix);
-    //matrixStack.push(pushMatrix);
+    matrixStack.push(pushMatrix);
+    //delete[] pushMatrix;
 }
 
 void pop()
 {
-    //mat_copy(curMatrix, matrixStack.top());
-    //matrixStack.pop(); 
+    GLfloat* temp = matrixStack.top();
+    mat_copy(curMatrix, temp);
+    matrixStack.pop(); 
+    delete[] temp;
+}
+
+void loadIdentity()
+{
+    mat_copy(curMatrix, ident);
+    load3DMatrix(curMatrix);
 }
 
 void translate(GLfloat x, GLfloat y, GLfloat z = 0.0){
@@ -127,39 +139,90 @@ void scale(GLfloat x, GLfloat y, GLfloat z = 1.0){
 
 void rotatez(GLfloat angle){
         GLfloat deg = angle*PI/180.0;
-	load3DMatrix(
+	GLfloat r_mat[16] = {
 		cos(deg) , - sin(deg), 0.0, 0.0,
 		sin(deg),    cos(deg), 0.0, 0.0, 
 		0.0, 0.0, 1.0, 0.0,
-		0.0, 0.0, 0.0, 1);
+		0.0, 0.0, 0.0, 1.0};
+		
+    GLfloat result[16];
+    mat_multiplym(r_mat, curMatrix, 4, result);
+    mat_copy(curMatrix, result);
+    load3DMatrix(curMatrix);
+		
 }
 
 
 void rotatey(GLfloat angle){
         GLfloat deg = angle*PI/180.0;
-	load3DMatrix(
+	GLfloat r_mat[16] = {
 		cos(deg) , 0.0 ,  sin(deg), 0.0, 
 		0.0,    1.0, 0.0, 0.0, 
 		- sin (deg), 0.0, cos (deg), 0.0,
-		0.0, 0.0, 0.0, 1.0);
+		0.0, 0.0, 0.0, 1.0};
+    GLfloat result[16];
+    mat_multiplym(r_mat, curMatrix, 4, result);
+    mat_copy(curMatrix, result);
+    load3DMatrix(curMatrix);
 }
 
 
 
-void drawLeaf(void) {
+void drawLeaf(int i) {
 	/* ADD YOUR CODE to make the 2D leaf a 3D extrusion */
-	glColor3f(0.1,0.9,0.1); 
-	glBegin(GL_POLYGON);
 	
-	glVertex3f(0.0,0.0,0.0);
-	glVertex3f(1.0,0.7,0.0);
-	glVertex3f(1.3,1.8,0.0);
-	glVertex3f(1.0,2.8,0.0);
-	glVertex3f(0.0,4.0,0.0);
-	glVertex3f(-1.0,2.8,0.0);
-	glVertex3f(-1.3,1.8,0.0);
-	glVertex3f(-1.0,0.7,0.0);
-	glEnd();
+	if (i == 0)
+    {
+	    glColor3f(0.1,0.9,0.1); 
+	    glBegin(GL_POLYGON);
+	
+	    glVertex3f(0.0,0.0,0.0);
+	    glVertex3f(1.0,0.7,0.0);
+	    glVertex3f(1.3,1.8,0.0);
+	    glVertex3f(1.0,2.8,0.0);
+	    glVertex3f(0.0,4.0,0.0);
+	    glVertex3f(-1.0,2.8,0.0);
+	    glVertex3f(-1.3,1.8,0.0);
+	    glVertex3f(-1.0,0.7,0.0);
+	    glEnd();
+	}
+	else
+	{
+	
+#if 1
+	    GLfloat vec[4] = {2, 6, 0, 0};
+	    drawBranch(i - 1, vec); 
+	    
+	    push();
+	    rotatez(20);
+	    drawLeaf(i - 1);
+	    pop();
+	    
+	    push();
+	    translate(-vec[0], -vec[1], -vec[2]);
+	    rotatez(-20);
+	    translate(vec[0], vec[1], vec[2]);
+	    drawLeaf(i - 1);
+	    pop();
+	    
+#else
+	    GLfloat vec[4] = {2, 6, 0, 0};
+	    drawBranch(i - 1, vec); 
+	    push();
+	    translate(-vec[0], -vec[1], -vec[2]);
+	    rotatez(30);
+	    translate(vec[0], vec[1], vec[2]);
+	    drawLeaf(i - 1);
+	    pop();
+	    
+	    push();
+	    translate(-vec[0], -vec[1], -vec[2]);
+	    rotatez(-30);
+	    translate(vec[0], vec[1], vec[2]);
+	    drawLeaf(i - 1);
+	    pop();
+#endif
+	}
 	
 #if 0
 	glBegin(GL_POLYGON);
@@ -175,15 +238,95 @@ void drawLeaf(void) {
 	#endif
 }
 
-void drawBranch(void) {
+void drawBranch(int i, GLfloat* vec) {
 	/* ADD YOUR CODE to make the 2D branch a 3D extrusion */
-	glColor3f(0.54,0.27,0.07); 
+	if (i == 0)
+	{
+	    glColor3f(0.54,0.27,0.07); 
+	    glBegin(GL_POLYGON);
+	    glVertex2f(1.0,0.0);
+	    glVertex2f(1.0,6.0);
+	    glVertex2f(-1.0,6.0);
+	    glVertex2f(-1.0,0.0);
+	    glEnd();
+	    
+	    translate(vec[0], vec[1], vec[2]);
+    }
+    else
+    {
+        //grow();
+        drawBranch(i - 1, vec);
+    }
+}
+
+void drawBranch3D(int i)
+{
+    GLfloat vertexList[] = { 
+        //bottom
+        0.0, 0.0, 4.0,
+	    4.0, 0.0, 0.8,
+	    2.4, 0.0, -4.0, 
+	    -2.4, 0.0, -4.0, 
+	    -4.0, 0.0, 0.8,
+	    //top
+        -2.0, 2.0, 0.4,
+        -1.2, 2.0, -2.0,
+        1.2, 2.0, -2.0,
+        2.0, 2.0, 0.4,
+        0.0, 2.0, 2.0
+	};
+	
+	int indexList[] = {
+	    //0, 1, 2, 3, 4,
+	    //5, 6, 7, 8, 9,
+	    0, 9, 8, 1,
+	    1, 8, 7, 2,
+	    2, 7, 6, 3,
+	    3, 6, 5, 4,
+	    4, 5, 9, 0
+	};
+	
+	
+    // draw bottom
+    glColor3f(0.54,0.27,0.07); 
 	glBegin(GL_POLYGON);
-	glVertex2f(1.0,0.0);
-	glVertex2f(1.0,6.0);
-	glVertex2f(-1.0,6.0);
-	glVertex2f(-1.0,0.0);
+	glVertex3f(vertexList[0], vertexList[1], vertexList[2]);
+	glVertex3f(vertexList[3], vertexList[4], vertexList[5]);
+    glVertex3f(vertexList[6], vertexList[7], vertexList[8]);
+    glVertex3f(vertexList[9], vertexList[10], vertexList[11]);
+    glVertex3f(vertexList[12], vertexList[13], vertexList[14]);
 	glEnd();
+
+    // draw top
+	//glColor3f(0.54,0.27,0.07); 
+	glBegin(GL_POLYGON);
+	glVertex3f(vertexList[15], vertexList[16], vertexList[17]);
+	glVertex3f(vertexList[18], vertexList[19], vertexList[20]);
+    glVertex3f(vertexList[21], vertexList[22], vertexList[23]);
+    glVertex3f(vertexList[24], vertexList[25], vertexList[26]);
+    glVertex3f(vertexList[27], vertexList[28], vertexList[29]);
+	glEnd();
+	
+	for( int q = 0; q < 5; ++q)
+	{
+	    int ind1 = indexList[q * 4];
+	    int ind2 = indexList[q * 4 + 1];
+	    int ind3 = indexList[q * 4 + 2];
+	    int ind4 = indexList[q * 4 + 3];
+	    glBegin(GL_QUADS);
+	    glVertex3f(vertexList[ind1], vertexList[ind1 + 1], vertexList[ind1 + 2]);
+	    glVertex3f(vertexList[ind2], vertexList[ind2 + 1], vertexList[ind2 + 2]);
+	    glVertex3f(vertexList[ind3], vertexList[ind3 + 1], vertexList[ind3 + 2]);
+	    glVertex3f(vertexList[ind4], vertexList[ind4 + 1], vertexList[ind4 + 2]);
+	    glEnd();
+	}
+	
+}
+
+void drawTree(int i)
+{
+    initMatrixStack();
+    drawLeaf(i);
 }
 
 /*
@@ -208,60 +351,28 @@ void drawPlant(void) {
 	 * transformation matrices are implmented.
 	 */
 
-    //load2DMatrix(1,0,10,0,1,0,0,0,1);
-    //load2DMatrix(0, -1, 0, -1, 0, 0, 0, 0, 1);
-/*
-	load3DMatrix(
-		1 , 0, 0, 5,
-		0, 1, 0, 5, 
-		0, 0, 1, 0, 
-		0, 0, 0, 1);
-
-	scale(3, 3);
-	rotatez(90);
-*/
     initMatrixStack();
 
+    //drawTree(4);
+    push();
+    //scale(10, 10, 1);
+    drawBranch3D(0);
+    pop();
 #if 0
     push();
-    translate(10,0,0);
-    scale(2, 1);
+    translate(0,-10,0);
+	drawBranch();
+	translate(0,6,0);
+	drawLeaf();
+	pop();
+	push();
+	rotatez(45);
+	drawBranch();
+	translate(6 * -cos (PI/4), 6 * sin(PI/4));
 	drawLeaf();
     pop();
     
-    push();
-    translate(-3,0,0);
-    scale(1, 2);
-	drawLeaf();
-    pop();
 #endif
-
-    std::cout<<"init curmat:"<<std::endl;
-    print_mat(curMatrix, 4);
-    //glPushMatrix();
-    push();
-    //glTranslatef(-10,0,0);
-    translate(10,0,0);
-    drawLeaf();
-    pop();
-    
-    std::cout<<"curmat1:"<<std::endl;
-    print_mat(curMatrix, 4);
-    //glPopMatrix();
-	//drawBranch();
-    
-    //glPushMatrix();
-    push();
-    //glTranslatef(10,0,0);
-    translate(-10,0,0);
-    drawLeaf();
-    pop();
-
-    std::cout<<"curmat2:"<<std::endl;
-    print_mat(curMatrix, 4);
-    //glPopMatrix();
-	//drawBranch();
-	
 }
 
 
