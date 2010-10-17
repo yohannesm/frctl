@@ -10,6 +10,7 @@
 #ifdef _WIN32
 #include <windows.h>
 #endif
+#include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -24,6 +25,8 @@ int W=800;		/* window width */
 int H=600;		/* window height */
 int X_OFF = 10;	/* window x offset */
 int Y_OFF = 10;	/* window y offset */
+float rotY = 0;
+float rotZ = 0;
 
 /* local function declarations */
 void display(void);
@@ -31,42 +34,12 @@ void init(void);
 int endPlant(int);
 void myKeyHandler(unsigned char ch, int x, int y);
 void rotateCamera(double deg, int axis);
+void draw_cone_tri_calc(double height, double radius, int base_tri);
 
 enum Axis {X_AXIS, Y_AXIS, Z_AXIS};
 
 int main (int argc, char** argv) 
 {
-
-#if 0
-  GLfloat m1[4][4] = { {1, 1, 1, 1}, 
-		      {1, 1, 1, 1},
-		      {1, 1, 1, 1},
-		      {1, 1, 1, 1}};
-
-
-  GLfloat m1[16] = { 1, 1, 1, 1, 
-		      1, 1, 1, 1,
-		      1, 1, 1, 1,
-		      1, 1, 1, 1};
-
- GLfloat v1[4] = {1, 1, 1, 1};
- GLfloat result[4];
- mat_multiplyv(m1, v1, 4, result);
- print_vec(result, 4);
- #endif
- #if 0
-  GLfloat m1[16] = { 1, 1, 1, 1, 
-		      1, 1, 1, 1,
-		      1, 1, 1, 1,
-		      1, 1, 1, 1};
-  GLfloat m2[16] = { 1, 1, 1, 1, 
-		      1, 1, 1, 1,
-		      1, 1, 1, 1,
-		      1, 1, 1, 1};
- GLfloat result[16];
- mat_multiplym(m1, m2, 4, result);
- print_mat(result, 4);
- #endif
   glutInit(&argc,argv);
   glutInitWindowSize(W, H);
   glutInitWindowPosition(X_OFF, Y_OFF);
@@ -105,12 +78,30 @@ void rotateCamera(double deg, Axis a) {
 	if (a == X_AXIS) {
 		x = 1.0f;
 	} else if (a == Y_AXIS) {
-		y = 1.0f;
+	    y = 1.0f;
+		//rotatey(deg);
 	} else if (a == Z_AXIS) {
-		z = 1.0f;
+        z = 1.0f;
+		//rotatez(deg);
 	}
  
 	glRotatef(deg, x, y, z);
+}
+
+void rotateTree(double deg, Axis a)
+{
+    if (a == X_AXIS)
+    {
+
+    }
+    else if (a == Y_AXIS)
+    {
+        rotY += deg;
+    }
+    else
+    {
+        rotZ += deg;
+    }
 }
 
 /* Handle user input */
@@ -124,36 +115,43 @@ void myKeyHandler(unsigned char ch, int x, int y) {
 #endif
 		case '/':
 		    // rotate ccw about y axis
+		    rotateTree(5, Y_AXIS);
 			break;
 			
 		case '?':
 		    // rotate cw about y axis
+		    rotateTree(-5, Y_AXIS);
 		    break;
 		    
 		case ',':
+		    std::cout<<"ROTATING X"<<std::endl;
 			rotateCamera(5, X_AXIS);
 			break;
 
 		case '<':
+		    std::cout<<"ROTATING -X"<<std::endl;
 			rotateCamera(-5, X_AXIS);
 			break;
 
 		case '.':
+		    std::cout<<"ROTATING Y"<<std::endl;
 			rotateCamera(5, Y_AXIS);
 			break;
 
 		case '>':
+    		std::cout<<"ROTATING -Y"<<std::endl;
 			rotateCamera(-5, Y_AXIS);
 			break;
 
 		case ';':
+			std::cout<<"ROTATING Z"<<std::endl;
 			rotateCamera(5, Z_AXIS);
 			break;
 
 		case ':':
+			std::cout<<"ROTATING -Z"<<std::endl;
 			rotateCamera(-5, Z_AXIS);
 			break;
-
 
         case 'q':
             endPlant(0);
@@ -170,7 +168,7 @@ void myKeyHandler(unsigned char ch, int x, int y) {
 	 * If control reaches here, the key press was recognized.  Refresh
 	 * the screen, since most key presses change the display in some way.
 	 */
-	//myDisplay();
+	display();
 
 	return;
 }
@@ -185,13 +183,12 @@ int endPlant(int status) {
 
 void display() {
 	glEnable(GL_DEPTH_TEST);
+	glMatrixMode(GL_MODELVIEW);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
     
-	/* See drawplant.c for the definition of this routine */
-	drawPlant();
-
-
+	drawPlant(rotY, rotZ);
+	//draw_cone_tri_calc(5, 5, 5);
+	
     glFlush();  /* Flush all executed OpenGL ops finish */
 
     /*
@@ -199,6 +196,37 @@ void display() {
      * function every time we are done drawing.
      */
     glutSwapBuffers();
+}
+
+void draw_cone_tri_calc(double height, double radius, int base_tri) {
+	/* ADD YOUR CODE HERE */
+    // >= 3 use isoceles triangles with the legs as radii
+	/* All arguments here are pointers */
+
+    // get the angle for each triangle
+    double theta = 2 * 3.14159 / base_tri;
+    int q = 0;
+    //printf("Theta %d", theta);
+    for (q = 0; q < base_tri; ++q)
+    {
+        // draw the base triangle, the ones which approximate the circular base of a cone
+        // this is somewhat inefficient as it reuses verticies
+    	glBegin(GL_TRIANGLES);
+        // pick color based on loop var
+    	glColor3f( (q%3 == 0 ? 1 : 0), (q%3 == 1 ? 1 : 0), (q%3 == 2 ? 1 : 0));
+	    glVertex3f(0, 0, 0);
+	    glVertex3f(radius * cos(q * theta), radius * sin(q * theta), 0);
+	    glVertex3f(radius * cos( (q + 1)  * theta), radius * sin( (q + 1) * theta), 0);
+        glEnd();
+
+        // draw the triangle that make up the cone
+    	glBegin(GL_TRIANGLES);
+    	glColor3f( (q%3 == 2 ? 1 : 0), (q%3 == 1 ? 1 : 0), (q%3 == 0 ? 1 : 0));
+	    glVertex3f(0, 0, height);
+	    glVertex3f(radius * cos(q * theta), radius * sin(q * theta), 0);
+	    glVertex3f(radius * cos( (q + 1)  * theta), radius * sin( (q + 1) * theta), 0);
+        glEnd();
+    }
 }
 
 /* end of plant.c */

@@ -24,7 +24,7 @@
 #define PI 3.14159265
 
 std::stack<GLfloat*> matrixStack;
-static GLfloat curMatrix[16];
+
 
 /* Takes a 2D matrix in row-major order, and loads the 3D matrix which
    does the same trasformation into the OpenGL MODELVIEW matrix, in
@@ -85,6 +85,8 @@ void initMatrixStack ()
                     
     //curMatrix = new GLfloat[16];
     mat_copy(curMatrix, ident);
+    std::cout<<"inits"<<std::endl;
+    print_mat(curMatrix, 4);
     //delete[] temp;
 }
 
@@ -110,7 +112,7 @@ void loadIdentity()
     load3DMatrix(curMatrix);
 }
 
-void translate(GLfloat x, GLfloat y, GLfloat z = 0.0){
+void translate(GLfloat x, GLfloat y, GLfloat z){
 
 	GLfloat t_mat[16] = {
 		1.0 , 0.0, 0.0, x,
@@ -124,7 +126,7 @@ void translate(GLfloat x, GLfloat y, GLfloat z = 0.0){
     load3DMatrix(curMatrix);
 }
 
-void scale(GLfloat x, GLfloat y, GLfloat z = 1.0){
+void scale(GLfloat x, GLfloat y, GLfloat z){
 	GLfloat s_mat[16] = {
 		x , 0.0, 0.0, 0.0,
 		0.0, y, 0.0, 0.0, 
@@ -149,7 +151,6 @@ void rotatez(GLfloat angle){
     mat_multiplym(r_mat, curMatrix, 4, result);
     mat_copy(curMatrix, result);
     load3DMatrix(curMatrix);
-		
 }
 
 
@@ -166,7 +167,11 @@ void rotatey(GLfloat angle){
     load3DMatrix(curMatrix);
 }
 
-
+void testRotate()
+{
+    rotatey(5);
+    rotatez(5);
+}
 
 void drawLeaf(int i) {
 	/* ADD YOUR CODE to make the 2D leaf a 3D extrusion */
@@ -188,8 +193,6 @@ void drawLeaf(int i) {
 	}
 	else
 	{
-	
-#if 1
 	    GLfloat vec[4] = {2, 6, 0, 0};
 	    drawBranch(i - 1, vec); 
 	    
@@ -204,38 +207,87 @@ void drawLeaf(int i) {
 	    translate(vec[0], vec[1], vec[2]);
 	    drawLeaf(i - 1);
 	    pop();
-	    
-#else
-	    GLfloat vec[4] = {2, 6, 0, 0};
-	    drawBranch(i - 1, vec); 
-	    push();
-	    translate(-vec[0], -vec[1], -vec[2]);
-	    rotatez(30);
-	    translate(vec[0], vec[1], vec[2]);
-	    drawLeaf(i - 1);
-	    pop();
-	    
-	    push();
-	    translate(-vec[0], -vec[1], -vec[2]);
-	    rotatez(-30);
-	    translate(vec[0], vec[1], vec[2]);
-	    drawLeaf(i - 1);
-	    pop();
-#endif
 	}
-	
-#if 0
+}
+
+void drawLeaf3D (int i)
+{
+    GLfloat vertexList[] = 
+    {
+        // bottom
+        0.0, 0.0, 0.0,
+        1.0, 0.0, 0.7,
+        1.3, 0.0, 1.8,
+        1.0, 0.0, 2.8,
+        0.0, 0.0, 4.0,
+        -1.0, 0.0, 2.8,
+        -1.3, 0.0, 1.8,
+        -1.0, 0.0, 0.7,
+        // top
+        -1.0, 1.0, 0.7,
+        -1.3, 1.0, 1.8,
+        -1.0, 1.0, 2.8,
+        0.0, 1.0, 4.0,
+        1.0, 1.0, 2.8,
+        1.3, 1.0, 1.8,
+        1.0, 1.0, 0.7,
+        0.0, 1.0, 0.0,
+        
+    };
+    
+    int indexList[] = 
+    {
+        0, 1, 14, 15,
+        1, 2, 13, 14,
+        2, 3, 12, 13,
+        3, 4, 11, 12,
+        4, 5, 10, 11,
+        5, 6, 9, 10,
+        6, 7, 8, 9,
+        7, 0, 15, 8
+    };
+    
+    // draw bottom
+	glColor3f(0.1,.9,0.1); 
 	glBegin(GL_POLYGON);
-	glVertex3f(0.0,0.0,0.1);
-	glVertex3f(1.0,0.7,0.1);
-	glVertex3f(1.3,1.8,0.1);
-	glVertex3f(1.0,2.8,0.1);
-	glVertex3f(0.0,4.0,0.1);
-	glVertex3f(-1.0,2.8,0.1);
-	glVertex3f(-1.3,1.8,0.1);
-	glVertex3f(-1.0,0.7,0.1);
+	glVertex3f(vertexList[0], vertexList[1], vertexList[2]);
+	glVertex3f(vertexList[3], vertexList[4], vertexList[5]);
+    glVertex3f(vertexList[6], vertexList[7], vertexList[8]);
+    glVertex3f(vertexList[9], vertexList[10], vertexList[11]);
+    glVertex3f(vertexList[12], vertexList[13], vertexList[14]);
+	glVertex3f(vertexList[15], vertexList[16], vertexList[17]);
+	glVertex3f(vertexList[18], vertexList[19], vertexList[20]);
+    glVertex3f(vertexList[21], vertexList[22], vertexList[23]);
 	glEnd();
-	#endif
+	
+    // draw top
+	glColor3f(.7,.9,0.1); 
+	glBegin(GL_POLYGON);
+    glVertex3f(vertexList[24], vertexList[25], vertexList[26]);
+    glVertex3f(vertexList[27], vertexList[28], vertexList[29]);
+    glVertex3f(vertexList[30], vertexList[31], vertexList[32]);
+    glVertex3f(vertexList[33], vertexList[34], vertexList[35]);
+    glVertex3f(vertexList[36], vertexList[37], vertexList[38]);
+	glVertex3f(vertexList[39], vertexList[40], vertexList[41]);
+	glVertex3f(vertexList[42], vertexList[43], vertexList[44]);
+    glVertex3f(vertexList[45], vertexList[46], vertexList[47]);
+	glEnd();
+	
+	for(int q = 0; q < 8; ++q)
+	{
+	    int ind0 = indexList[q * 4];
+	    int ind1 = indexList[q * 4 + 1];
+	    int ind2 = indexList[q * 4 + 2];
+	    int ind3 = indexList[q * 4 + 3];
+	    
+	    glColor3f(.1 + q * .1, .9, .1);
+	    glBegin(GL_QUADS);
+	    glVertex3f(vertexList[ind0 * 3], vertexList[ind0 * 3 + 1], vertexList[ind0 * 3 + 2]);
+	    glVertex3f(vertexList[ind1 * 3], vertexList[ind1 * 3 + 1], vertexList[ind1 * 3 + 2]);
+	    glVertex3f(vertexList[ind2 * 3], vertexList[ind2 * 3 + 1], vertexList[ind2 * 3 + 2]);
+	    glVertex3f(vertexList[ind3 * 3], vertexList[ind3 * 3 + 1], vertexList[ind3 * 3 + 2]);
+	    glEnd();
+	}
 }
 
 void drawBranch(int i, GLfloat* vec) {
@@ -269,11 +321,11 @@ void drawBranch3D(int i)
 	    -2.4, 0.0, -4.0, 
 	    -4.0, 0.0, 0.8,
 	    //top
-        -2.0, 2.0, 0.4,
-        -1.2, 2.0, -2.0,
-        1.2, 2.0, -2.0,
-        2.0, 2.0, 0.4,
-        0.0, 2.0, 2.0
+        -2.0, 4.0, 0.4,
+        -1.2, 4.0, -2.0,
+        1.2, 4.0, -2.0,
+        2.0, 4.0, 0.4,
+        0.0, 4.0, 2.0
 	};
 	
 	int indexList[] = {
@@ -306,18 +358,21 @@ void drawBranch3D(int i)
     glVertex3f(vertexList[24], vertexList[25], vertexList[26]);
     glVertex3f(vertexList[27], vertexList[28], vertexList[29]);
 	glEnd();
-	
-	for( int q = 0; q < 5; ++q)
+
+    // for different color sides
+	for(int q = 0; q < 5; ++q)
 	{
+	    glColor3f(.68 - q * .1, .40 - q * .1, .07);
 	    int ind1 = indexList[q * 4];
 	    int ind2 = indexList[q * 4 + 1];
 	    int ind3 = indexList[q * 4 + 2];
 	    int ind4 = indexList[q * 4 + 3];
+
 	    glBegin(GL_QUADS);
-	    glVertex3f(vertexList[ind1], vertexList[ind1 + 1], vertexList[ind1 + 2]);
-	    glVertex3f(vertexList[ind2], vertexList[ind2 + 1], vertexList[ind2 + 2]);
-	    glVertex3f(vertexList[ind3], vertexList[ind3 + 1], vertexList[ind3 + 2]);
-	    glVertex3f(vertexList[ind4], vertexList[ind4 + 1], vertexList[ind4 + 2]);
+	    glVertex3f(vertexList[ind1 * 3], vertexList[ind1 * 3 + 1], vertexList[ind1 * 3 + 2]);
+	    glVertex3f(vertexList[ind2 * 3], vertexList[ind2 * 3 + 1], vertexList[ind2 * 3 + 2]);
+	    glVertex3f(vertexList[ind3 * 3], vertexList[ind3 * 3 + 1], vertexList[ind3 * 3 + 2]);
+	    glVertex3f(vertexList[ind4 * 3], vertexList[ind4 * 3 + 1], vertexList[ind4 * 3 + 2]);
 	    glEnd();
 	}
 	
@@ -325,8 +380,10 @@ void drawBranch3D(int i)
 
 void drawTree(int i)
 {
-    initMatrixStack();
+    //initMatrixStack();
+    push();
     drawLeaf(i);
+    pop();
 }
 
 /*
@@ -335,7 +392,7 @@ void drawTree(int i)
  * ADD YOUR CODE and modify the function to take an L-system depth and
  * any other necessary arguments.
  */
-void drawPlant(void) {
+void drawPlant(float roty, float rotz) {
 
 
 	/* Load a hard-coded rotation matrix of -30 degrees about positive z */
@@ -351,13 +408,41 @@ void drawPlant(void) {
 	 * transformation matrices are implmented.
 	 */
 
+#if 1
     initMatrixStack();
+    
+    rotatey(roty);
+    rotatez(rotz);
 
-    //drawTree(4);
+    // problems with rotation:
+    // how rotate works now is we pass the degrees in from the display function
+    // and start out the current matrix with that rotation
+    // but it doesnt do the rotation we need it to
+    // the one we need it to do being rotate around the global y axis
+    // instead it rotates around the models y axis
+    // how do we fix this?
+    
     push();
-    //scale(10, 10, 1);
+    translate(5, -3, 0);
+    scale(1.5, 10, 1.5);
     drawBranch3D(0);
+    print_mat(curMatrix, 4);
     pop();
+    
+    //push();
+    //translate(-3, 0, 0);
+    //scale(1.5, 1.5, 1.5);
+    //drawLeaf3D(0);
+    //pop();
+#endif
+
+
+
+    
+    //drawTree(4);
+    //print_mat(curMatrix, 4);
+    //print_mat(matrixStack.top(), 4);
+    
 #if 0
     push();
     translate(0,-10,0);
