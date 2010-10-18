@@ -186,7 +186,7 @@ void display() {
 	glMatrixMode(GL_MODELVIEW);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
-	drawPlant(rotY, rotZ);
+	drawPlant(0, rotY, rotZ);
 	//draw_cone_tri_calc(5, 5, 5);
 	
     glFlush();  /* Flush all executed OpenGL ops finish */

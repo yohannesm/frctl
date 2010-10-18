@@ -24,7 +24,8 @@
 #define PI 3.14159265
 
 std::stack<GLfloat*> matrixStack;
-
+static GLfloat curMatrix[16];
+static int scale_level = -1;
 
 /* Takes a 2D matrix in row-major order, and loads the 3D matrix which
    does the same trasformation into the OpenGL MODELVIEW matrix, in
@@ -85,8 +86,8 @@ void initMatrixStack ()
                     
     //curMatrix = new GLfloat[16];
     mat_copy(curMatrix, ident);
-    std::cout<<"inits"<<std::endl;
-    print_mat(curMatrix, 4);
+    //std::cout<<"inits"<<std::endl;
+    //print_mat(curMatrix, 4);
     //delete[] temp;
 }
 
@@ -212,26 +213,27 @@ void drawLeaf(int i) {
 
 void drawLeaf3D (int i)
 {
+    std::cout<<"drawLeaf3D("<<i<<")"<<std::endl;
     GLfloat vertexList[] = 
     {
         // bottom
-        0.0, 0.0, 0.0,
-        1.0, 0.0, 0.7,
-        1.3, 0.0, 1.8,
-        1.0, 0.0, 2.8,
-        0.0, 0.0, 4.0,
-        -1.0, 0.0, 2.8,
-        -1.3, 0.0, 1.8,
-        -1.0, 0.0, 0.7,
+        0.0, 0.0, 0.0, 
+        1.0, 0.7,0.0, 
+        1.3, 1.8, 0.0, 
+        1.0, 2.8, 0.0, 
+        0.0, 4.0, 0.0, 
+        -1.0, 2.8,0.0, 
+        -1.3, 1.8, 0.0, 
+        -1.0, 0.7, 0.0, 
         // top
-        -1.0, 1.0, 0.7,
-        -1.3, 1.0, 1.8,
-        -1.0, 1.0, 2.8,
-        0.0, 1.0, 4.0,
-        1.0, 1.0, 2.8,
-        1.3, 1.0, 1.8,
-        1.0, 1.0, 0.7,
-        0.0, 1.0, 0.0,
+        -1.0, 0.7, 1.0, 
+        -1.3, 1.8, 1.0, 
+        -1.0, 2.8,1.0,
+        0.0, 4.0,1.0,
+        1.0, 2.8, 1.0, 
+        1.3, 1.8,1.0,
+        1.0, 0.7,1.0, 
+        0.0, 0.0,1.0,
         
     };
     
@@ -313,6 +315,7 @@ void drawBranch(int i, GLfloat* vec) {
 
 void drawBranch3D(int i)
 {
+    std::cout<<"drawBranch3D("<<i<<")"<<std::endl;
     GLfloat vertexList[] = { 
         //bottom
         0.0, 0.0, 4.0,
@@ -321,11 +324,11 @@ void drawBranch3D(int i)
 	    -2.4, 0.0, -4.0, 
 	    -4.0, 0.0, 0.8,
 	    //top
-        -2.0, 4.0, 0.4,
-        -1.2, 4.0, -2.0,
-        1.2, 4.0, -2.0,
-        2.0, 4.0, 0.4,
-        0.0, 4.0, 2.0
+        -2.0, 24.0, 0.4,
+        -1.2, 24.0, -2.0,
+        1.2, 24.0, -2.0,
+        2.0, 24.0, 0.4,
+        0.0, 24.0, 2.0
 	};
 	
 	int indexList[] = {
@@ -376,6 +379,59 @@ void drawBranch3D(int i)
 	    glEnd();
 	}
 	
+	// move the turtle along the correct vector
+    GLfloat fullBranchVec[] = {0, 24, 0, 0};
+    GLfloat curBranchVec[] = {0, 0, 0, 0};
+    mat_multiplyv(curMatrix, fullBranchVec, 4, curBranchVec);
+    vec_copy(fullBranchVec, curBranchVec, 4);
+    
+#if 0
+    // must scale the translation by the depth of recursion
+    GLfloat scale_factor = pow(1/2, scale_level);
+    GLfloat s_mat[16] = {
+		scale_factor , 0.0, 0.0, 0.0,
+		0.0, scale_factor, 0.0, 0.0, 
+		0.0, 0.0, scale_factor, 0.0,
+		0.0, 0.0, 0.0, 1.0};
+		
+	//mat_multiplyv(s_mat, fullBranchVec, 4, curBranchVec);
+#endif
+    translate(curBranchVec[0], curBranchVec[1], curBranchVec[2]);
+}
+
+void drawRecBranch (int i)
+{
+    std::cout<<"drawRecBranch("<<i<<")"<<std::endl;
+    if (i == 0)
+    {
+        drawBranch3D(0);
+    }
+    else
+    {
+        drawRecBranch(i - 1);
+    }
+}
+
+void drawRecLeaf (int i)
+{
+    std::cout<<"drawRecLeaf("<<i<<")"<<std::endl;
+    if (i == 0)
+    {
+        drawLeaf3D(0);
+    }
+    else
+    {
+        scale_level += 1;
+        //  WHEN SCALE_LEVEL IS 1 S = 0 WTF?
+        GLfloat s = pow(1/2, scale_level);
+        std::cout<<"scale_level: "<<scale_level<<" s: "<<s<<std::endl;
+        scale(s, s, s);
+        drawRecBranch(i - 1);
+        push();
+        drawRecLeaf(i - 1);
+        pop();
+        scale_level -= 1;
+    }
 }
 
 void drawTree(int i)
@@ -386,77 +442,47 @@ void drawTree(int i)
     pop();
 }
 
+void drawTree3D(int i)
+{
+    drawRecLeaf(i);
+}
+
 /*
  * Draws the plant.
  *
  * ADD YOUR CODE and modify the function to take an L-system depth and
  * any other necessary arguments.
  */
-void drawPlant(float roty, float rotz) {
-
-
-	/* Load a hard-coded rotation matrix of -30 degrees about positive z */
-	/* This matrix is only here as an example, and can be removed 
-#if 0
-	load2DMatrix(
-	       sqrt(3.0)/2.0, -1.0/2.0,      0.0,
-		   1.0/2.0,       sqrt(3.0)/2.0, 0.0,
-		   0.0,           0.0,           1.0);
-#endif
-	
-	 * The location of the leaf and branch will not look right until
-	 * transformation matrices are implmented.
-	 */
+void drawPlant(int i, float roty, float rotz) {
 
 #if 1
     initMatrixStack();
-    
+#if 1
+    push();
+    // this rotation takes care of the global rotation
     rotatey(roty);
-    rotatez(rotz);
-
-    // problems with rotation:
-    // how rotate works now is we pass the degrees in from the display function
-    // and start out the current matrix with that rotation
-    // but it doesnt do the rotation we need it to
-    // the one we need it to do being rotate around the global y axis
-    // instead it rotates around the models y axis
-    // how do we fix this?
-    
+    translate(0, -20, 0);
+    drawTree3D(2);
+    pop();
+#else
     push();
     translate(5, -3, 0);
-    scale(1.5, 10, 1.5);
+    rotatey(roty);
+    rotatez(rotz);
     drawBranch3D(0);
     print_mat(curMatrix, 4);
     pop();
-    
-    //push();
-    //translate(-3, 0, 0);
-    //scale(1.5, 1.5, 1.5);
-    //drawLeaf3D(0);
-    //pop();
-#endif
-
-
-
-    
-    //drawTree(4);
-    //print_mat(curMatrix, 4);
-    //print_mat(matrixStack.top(), 4);
-    
-#if 0
+  
+            
     push();
-    translate(0,-10,0);
-	drawBranch();
-	translate(0,6,0);
-	drawLeaf();
-	pop();
-	push();
-	rotatez(45);
-	drawBranch();
-	translate(6 * -cos (PI/4), 6 * sin(PI/4));
-	drawLeaf();
+    translate(-3, 0, 0);
+    //scale(1.5, 1.5, 1.5);
+    rotatey(roty);
+    drawLeaf3D(0);
     pop();
     
+
+#endif
 #endif
 }
 
@@ -471,12 +497,12 @@ void zero_mat(GLfloat* vec, int dim){
 
 
 void mat_multiplyv(GLfloat* matrix, GLfloat* vector, int dim, GLfloat* result ){
-   zero_mat(result, dim);
-   for(int row=0; row<dim; ++row){
-   	for(int col=0; col<dim; ++col){
-	 result[row] += matrix[(row*dim+col)] * vector[col];
-	}
-   }
+    for (int q = 0; q < dim; ++q)
+        result[q] = 0;
+    
+    for(int row=0; row<dim; ++row)
+        for(int col=0; col<dim; ++col)
+            result[row] += matrix[row * dim + col] * vector[col];
 }
 
 void mat_multiplym(GLfloat* m1, GLfloat* m2, int dim, GLfloat* result ){
@@ -497,6 +523,13 @@ void mat_copy(GLfloat* m1, const GLfloat* m2, int dim)
 {
     for(int i=0; i<dim*dim; ++i){
         m1[i] = m2[i];
+    }
+}
+
+void vec_copy(GLfloat* v1, const GLfloat* v2, int dim)
+{
+    for(int i=0; i<dim; ++i){
+        v1[i] = v2[i];
     }
 }
 
