@@ -20,8 +20,8 @@ LIBDIR = -L/lusr/X11/lib
 LIBS = -framework OpenGL -framework GLUT
 endif
 
-plant: drawplant.cpp drawplant.h plant.cpp readppm.cpp
-	${CC} ${CFLAGS} $(INCLUDE) -o plant ${LIBDIR} ${LIBS} drawplant.cpp plant.cpp readppm.cpp
+plant: drawplant.cpp drawplant.h plant.cpp readppm.cpp mouse.h common.h
+	${CC} ${CFLAGS} $(INCLUDE) -o plant ${LIBDIR} ${LIBS} drawplant.cpp plant.cpp readppm.cpp mouse.cpp
 
 clean:
 	rm -f plant *.o core
