@@ -26,6 +26,7 @@
 std::stack<GLfloat*> matrixStack;
 static GLfloat curMatrix[16];
 static int scale_level = -1;
+static GLfloat curTranslation[] = {0, 0, 0};
 
 /* Takes a 2D matrix in row-major order, and loads the 3D matrix which
    does the same trasformation into the OpenGL MODELVIEW matrix, in
@@ -154,6 +155,19 @@ void rotatez(GLfloat angle){
     load3DMatrix(curMatrix);
 }
 
+
+void rotatex(GLfloat angle){
+        GLfloat deg = angle*PI/180.0;
+	GLfloat r_mat[16] = {
+		1.0, 0.0, 0.0, 0.0, 
+		0.0, cos(deg), -sin(deg), 0.0, 
+		0.0, sin(deg), cos(deg), 0.0,
+		0.0, 0.0, 0.0, 1.0};
+    GLfloat result[16];
+    mat_multiplym(r_mat, curMatrix, 4, result);
+    mat_copy(curMatrix, result);
+    load3DMatrix(curMatrix);
+}
 
 void rotatey(GLfloat angle){
         GLfloat deg = angle*PI/180.0;
@@ -384,51 +398,56 @@ void drawBranch3D(int i)
     GLfloat curBranchVec[] = {0, 0, 0, 0};
     mat_multiplyv(curMatrix, fullBranchVec, 4, curBranchVec);
     vec_copy(fullBranchVec, curBranchVec, 4);
-    
-#if 0
-    // must scale the translation by the depth of recursion
-    GLfloat scale_factor = pow(1/2, scale_level);
-    GLfloat s_mat[16] = {
-		scale_factor , 0.0, 0.0, 0.0,
-		0.0, scale_factor, 0.0, 0.0, 
-		0.0, 0.0, scale_factor, 0.0,
-		0.0, 0.0, 0.0, 1.0};
-		
-	//mat_multiplyv(s_mat, fullBranchVec, 4, curBranchVec);
-#endif
+
+    curTranslation[0] += curBranchVec[0];
+    curTranslation[1] += curBranchVec[1];
+    curTranslation[2] += curBranchVec[2];
     translate(curBranchVec[0], curBranchVec[1], curBranchVec[2]);
 }
 
-void drawRecBranch (int i)
+void drawRecBranch (int i, GLfloat roty)
 {
     std::cout<<"drawRecBranch("<<i<<")"<<std::endl;
     if (i == 0)
     {
+        push();
+        rotatey(roty);
         drawBranch3D(0);
+        pop();
     }
     else
     {
-        drawRecBranch(i - 1);
+        // grow?
+        drawRecBranch(i - 1, roty);
     }
 }
 
-void drawRecLeaf (int i)
+void drawRecLeaf (int i, GLfloat roty)
 {
     std::cout<<"drawRecLeaf("<<i<<")"<<std::endl;
     if (i == 0)
     {
+    
+        push();
+        rotatey(roty);
         drawLeaf3D(0);
+        pop();
     }
     else
     {
         scale_level += 1;
-        //  WHEN SCALE_LEVEL IS 1 S = 0 WTF?
-        GLfloat s = pow(1/2, scale_level);
+        GLfloat s = pow(.5, scale_level);
         std::cout<<"scale_level: "<<scale_level<<" s: "<<s<<std::endl;
         scale(s, s, s);
-        drawRecBranch(i - 1);
+        drawRecBranch(i - 1, roty);
+        
         push();
-        drawRecLeaf(i - 1);
+        drawRecLeaf(i - 1, roty);
+        pop();
+        
+        push();
+        rotatez(45);
+        drawRecLeaf(i - 1, roty);
         pop();
         scale_level -= 1;
     }
@@ -442,9 +461,9 @@ void drawTree(int i)
     pop();
 }
 
-void drawTree3D(int i)
+void drawTree3D(int i, GLfloat roty)
 {
-    drawRecLeaf(i);
+    drawRecLeaf(i, roty);
 }
 
 /*
@@ -454,16 +473,17 @@ void drawTree3D(int i)
  * any other necessary arguments.
  */
 void drawPlant(int i, float roty, float rotz) {
-
-#if 1
+    std::cout<<"drawPlant("<<i<<", "<<roty<<", "<<rotz<<")"<<std::endl;
     initMatrixStack();
+
 #if 1
     push();
     // this rotation takes care of the global rotation
-    rotatey(roty);
+    //rotatey(roty);
     translate(0, -20, 0);
-    drawTree3D(2);
+    drawTree3D(2, roty);
     pop();
+
 #else
     push();
     translate(5, -3, 0);
@@ -483,7 +503,8 @@ void drawPlant(int i, float roty, float rotz) {
     
 
 #endif
-#endif
+
+
 }
 
 

@@ -28,6 +28,18 @@ int Y_OFF = 10;	/* window y offset */
 float rotY = 0;
 float rotZ = 0;
 
+/* The dimensions of the viewing frustum */
+GLfloat fleft   = -1.0;
+GLfloat fright  =  1.0;
+GLfloat fbottom = -1.0;
+GLfloat ftop    =  1.0;
+GLfloat zNear   = -2.0;
+GLfloat zFar    = -7.0;
+
+
+/* Global zoom factor.  Modified by user input. Initially 1.0 */
+GLfloat zoomFactor = 1.0; 
+
 /* local function declarations */
 void display(void);
 void init(void);
