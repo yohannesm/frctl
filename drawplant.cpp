@@ -517,116 +517,56 @@ void drawBranch3D(GLfloat height, GLfloat botArea, GLfloat topArea)
     translate(curBranchVec[0], curBranchVec[1], curBranchVec[2]);
 }
 
-void drawRecBranch (int i, GLfloat roty, int growth)
+void drawNextSection(int i, GLfloat xangle, GLfloat zangle)
+{
+    push();
+    rotateAtOriginz(zangle);
+    rotateAtOriginx(xangle);
+    drawRecBranch(i -1, 0);
+    print_mat(curMatrix, 4);
+    push();
+    drawRecLeaf(i - 1);
+    pop();
+    pop();
+}
+
+void drawRecBranch (int i, int growth)
 {
     std::cout<<"drawRecBranch("<<i<<")"<<std::endl;
     if (i == 0)
     {
-        //rotatey(roty);
         GLfloat s = 1.0 + growth * .5;
         drawBranch3D(6 * s, 4 * s, 2 * s);
     }
     else
     {
-    
-   
-   drawRecBranch(i - 1, roty, growth + 1);
-
+        drawRecBranch(i - 1, growth + 1);
     }
 }
 
-void drawRecLeaf (int i, GLfloat roty)
+void drawRecLeaf (int i)
 {
     std::cout<<"drawRecLeaf("<<i<<")"<<std::endl;
     if (i == 0)
     {
-    
         push();
-        //rotatey(roty);
         drawLeaf3D(0);
         pop();
     }
     else
     {
+        drawRecBranch(i - 1, 0);
+        //drawNextSection(i, 15.0, 30.0);
+        //drawNextSection(i, -30.0, 25.0);
+        //drawNextSection(i, -10.0, -20.0);
+        //drawNextSection(i, 15.0, -30.0);
+        drawNextSection(i, 0, 0);
+        drawNextSection(i, 0, 45);
+        drawNextSection(i, 0, -45);
+        drawNextSection(i, 45, 0);
+        drawNextSection(i, -45, 0);
         
-        print_mat(curMatrix, 4);
-        drawRecBranch(i - 1, roty, 0);
-        print_mat(curMatrix, 4);
-        
-        push();
-        rotateAtOriginz(30);
-        rotateAtOriginx(30);
-        drawRecBranch(i -1, roty, 0);
-        print_mat(curMatrix, 4);
-        push();
-        drawRecLeaf(i - 1, roty);
-        pop();
-        pop();
-        
-        push();
-        rotateAtOriginx(-30);
-        drawRecBranch(i -1, roty, 0);
-        print_mat(curMatrix, 4);
-        push();
-        drawRecLeaf(i - 1, roty);
-        pop();
-        pop();
-#if 0
-        push();
-        rotateAtOriginz(-45);
-        rotateAtOriginx(45);
-        drawRecBranch(i -1, roty, 0);
-        print_mat(curMatrix, 4);
-        push();
-        drawRecLeaf(i - 1, roty);
-        pop();
-        pop();
-
-
-        push();
-        rotateAtOriginz(45);
-        rotateAtOriginx(-45);
-        drawRecBranch(i -1, roty, 0);
-        print_mat(curMatrix, 4);
-        push();
-        drawRecLeaf(i - 1, roty);
-        pop();
-        pop();
-        
-        print_mat(curMatrix, 4);
-
-        drawRecBranch(i - 1, roty, 0);
-#endif
-        push();
-        rotateAtOriginz(-25);
-        rotateAtOriginx(-35);
-        drawRecBranch(i -1, roty, 0);
-        print_mat(curMatrix, 4);
-        push();
-        drawRecLeaf(i - 1, roty);
-        pop();
-        pop();
-
-        push();
-        rotateAtOriginz(-45);
-        rotateAtOriginx(15);
-        drawRecBranch(i -1, roty, 0);
-        print_mat(curMatrix, 4);
-        push();
-        drawRecLeaf(i - 1, roty);
-        pop();
-        pop();
-        
-        push();
-        rotateAtOriginz(20);
-        rotateAtOriginx(25);
-        drawRecBranch(i -1, roty, 0);
-        print_mat(curMatrix, 4);
-        push();
-        drawRecLeaf(i - 1, roty);
-        pop();
-        pop();
-        
+        //drawRecLeaf(i - 1);
     }
 }
 
@@ -638,9 +578,9 @@ void drawTree(int i)
     pop();
 }
 
-void drawTree3D(int i, GLfloat roty)
+void drawTree3D(int i)
 {
-    drawRecLeaf(i, roty);
+    drawRecLeaf(i);
 }
 
 /*
@@ -652,37 +592,12 @@ void drawTree3D(int i, GLfloat roty)
 void drawPlant(int i, float roty, float rotz) {
     std::cout<<"drawPlant("<<i<<", "<<roty<<", "<<rotz<<")"<<std::endl;
     initMatrixStack();
-
-#if 1
     push();
-    // this rotation takes care of the global rotation
-    //rotatey(roty);
     translate(0, -25, 0);
+    // this rotation takes care of the global rotation
     rotateAtOriginy(roty);
-    drawTree3D(4, roty);
+    drawTree3D(2);
     pop();
-
-#else
-    push();
-    translate(5, -3, 0);
-    rotatey(roty);
-    rotatez(rotz);
-    drawBranch3D(0);
-    print_mat(curMatrix, 4);
-    pop();
-  
-            
-    push();
-    translate(-3, 0, 0);
-    //scale(1.5, 1.5, 1.5);
-    rotatey(roty);
-    drawLeaf3D(0);
-    pop();
-    
-
-#endif
-
-
 }
 
 
