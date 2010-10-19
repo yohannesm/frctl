@@ -69,7 +69,7 @@ void init() {
   glClearColor(0.0, 0.0, 0.0, 0.0);  
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  glOrtho(-40.0, 40.0, -40.0, 40.0, -10.0, 10.0);
+  glOrtho(-40.0, 40.0, -40.0, 40.0, -40.0, 40.0);
 }
 
 /*
