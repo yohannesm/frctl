@@ -29,4 +29,7 @@ void rotatey(GLfloat angle);
 void testRotate();
 void load3DMatrix(GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat);
 
+void load3DMatrixp(GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat);
+
+void loadIdentity();
 #endif	/* _DRAWPLANT_H_ */

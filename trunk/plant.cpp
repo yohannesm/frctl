@@ -4,7 +4,7 @@
  * Contains function callbacks and bookkeeping used by glut.  Starter code
  * for Project 2.
  *
- * Group Members: <FILL IN>
+ * Group Members: Yohannes Himawan, David Lee
  */
 
 #ifdef _WIN32
@@ -18,6 +18,7 @@
 #include <assert.h>
 #include "common.h"
 #include "drawplant.h"
+#include "mouse.h"
 
 /* GLOBAL VARAIBLES */
 /* (storage is actually allocated here) */
@@ -36,9 +37,17 @@ GLfloat ftop    =  1.0;
 GLfloat zNear   = -2.0;
 GLfloat zFar    = -7.0;
 
+GLfloat curMatrix[16] = {1.0, 0.0, 0.0, 0.0,
+		 	 0.0 , 1.0, 0.0, 0.0, 
+			0.0, 0.0, 1.0, 0.0,
+			0.0, 0.0, 0.0, 0.1};
 
 /* Global zoom factor.  Modified by user input. Initially 1.0 */
 GLfloat zoomFactor = 1.0; 
+GLfloat cam[] = {1.0, 0.0, 0.0, 0.0,
+	       0.0, 1.0, 0.0, 0.0,
+	       0.0, 0.0, 1.0, 0.0,
+	       0.0, 0.0, 0.0, 1.0};
 
 /* local function declarations */
 void display(void);
@@ -60,6 +69,9 @@ int main (int argc, char** argv)
   init();
   glutDisplayFunc(display);
   glutKeyboardFunc(myKeyHandler); 
+
+  //glutMouseFunc(myMouseButton);
+  // glutMotionFunc(myMouseMotion);
   glutMainLoop();
   return 0;
   
@@ -72,6 +84,8 @@ void init() {
   glOrtho(-40.0, 40.0, -40.0, 40.0, -10.0, 10.0);
 }
 
+
+
 /*
  * The rotation is specified in degrees about a certain axis of
  * the original model.
@@ -81,23 +95,60 @@ void init() {
  * Positive degrees rotate in the counterclockwise direction.
  */
 void rotateCamera(double deg, Axis a) {
-	double x, y, z;
+       //glMatrixMode(GL_PROJECTION);
 
-	x = 0;
-	y = 0;
-	z = 0;
+	GLfloat temp[16];
+        
 
 	if (a == X_AXIS) {
-		x = 1.0f;
+	GLfloat rotm[16] = {1.0, 0.0, 0.0, 0.0, 
+		0.0, cos(deg), -sin(deg), 0.0, 
+		0.0, sin(deg), cos(deg), 0.0,
+		0.0, 0.0, 0.0, 1.0};
+        mat_multiplym(cam, rotm, 4, temp);
+	mat_copy(cam, temp, 4);
+
+        load3DMatrixp(cam[0], cam[1], cam[2], cam[3],
+			cam[4], cam[5], cam[6], cam[7],
+			cam[8], cam[9], cam[10], cam[11],
+			cam[12], cam[13], cam[14], cam[15]);
+	//glLoadMatrixf(cam);
 	} else if (a == Y_AXIS) {
-	    y = 1.0f;
-		//rotatey(deg);
+	/*
+	GLfloat rotm[16] = {
+		cos(deg) , 0.0 ,  sin(deg), 0.0, 
+		0.0,    1.0, 0.0, 0.0, 
+		- sin (deg), 0.0, cos (deg), 0.0,
+		0.0, 0.0, 0.0, 1.0};
+        mat_multiplym(cam, rotm, 4, temp);
+	mat_copy(cam, temp, 4);
+
+        load3DMatrixp(cam[0], cam[1], cam[2], cam[3],
+			cam[4], cam[5], cam[6], cam[7],
+			cam[8], cam[9], cam[10], cam[11],
+			cam[12], cam[13], cam[14], cam[15]);*/
+			rotatey(deg);
 	} else if (a == Z_AXIS) {
-        z = 1.0f;
-		//rotatez(deg);
+	GLfloat rotm[16] = {
+		cos(deg) , - sin(deg), 0.0, 0.0,
+		sin(deg),    cos(deg), 0.0, 0.0, 
+		0.0, 0.0, 1.0, 0.0,
+		0.0, 0.0, 0.0, 1.0};
+        mat_multiplym(cam, rotm, 4, temp);
+	mat_copy(cam, temp, 4);
+
+        load3DMatrixp(cam[0], cam[1], cam[2], cam[3],
+			cam[4], cam[5], cam[6], cam[7],
+			cam[8], cam[9], cam[10], cam[11],
+			cam[12], cam[13], cam[14], cam[15]);
+
 	}
- 
-	glRotatef(deg, x, y, z);
+ #if 0
+        mat_multiplym(cam, rotm[16], 4, temp);
+	mat_copy(mat, temp, 4);
+
+	load3DMatrix(cam);
+	#endif
 }
 
 void rotateTree(double deg, Axis a)
@@ -127,42 +178,35 @@ void myKeyHandler(unsigned char ch, int x, int y) {
 #endif
 		case '/':
 		    // rotate ccw about y axis
-		    rotateTree(5, Y_AXIS);
+		    //rotateTree(5, Y_AXIS);
+		    rotateCamera(5, Y_AXIS);
 			break;
 			
 		case '?':
 		    // rotate cw about y axis
-		    rotateTree(-5, Y_AXIS);
+		    rotateCamera(-5, Y_AXIS);
+		    //rotateTree(-5, Y_AXIS);
 		    break;
 		    
 		case ',':
 		    std::cout<<"ROTATING X"<<std::endl;
-			rotateCamera(5, X_AXIS);
+			rotateCamera(.1, X_AXIS);
 			break;
 
 		case '<':
 		    std::cout<<"ROTATING -X"<<std::endl;
-			rotateCamera(-5, X_AXIS);
+			rotateCamera(-.1, X_AXIS);
 			break;
 
+
 		case '.':
-		    std::cout<<"ROTATING Y"<<std::endl;
-			rotateCamera(5, Y_AXIS);
+			std::cout<<"ROTATING Z"<<std::endl;
+			rotateCamera(.1, Z_AXIS);
 			break;
 
 		case '>':
-    		std::cout<<"ROTATING -Y"<<std::endl;
-			rotateCamera(-5, Y_AXIS);
-			break;
-
-		case ';':
-			std::cout<<"ROTATING Z"<<std::endl;
-			rotateCamera(5, Z_AXIS);
-			break;
-
-		case ':':
 			std::cout<<"ROTATING -Z"<<std::endl;
-			rotateCamera(-5, Z_AXIS);
+			rotateCamera(-.1, Z_AXIS);
 			break;
 
         case 'q':
@@ -197,9 +241,11 @@ void display() {
 	glEnable(GL_DEPTH_TEST);
 	glMatrixMode(GL_MODELVIEW);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    
+        
+	initMatrixStack();
+	push();
 	drawPlant(0, rotY, rotZ);
-	//draw_cone_tri_calc(5, 5, 5);
+	pop();
 	
     glFlush();  /* Flush all executed OpenGL ops finish */
 
@@ -210,8 +256,8 @@ void display() {
     glutSwapBuffers();
 }
 
+#if 0
 void draw_cone_tri_calc(double height, double radius, int base_tri) {
-	/* ADD YOUR CODE HERE */
     // >= 3 use isoceles triangles with the legs as radii
 	/* All arguments here are pointers */
 
@@ -240,5 +286,6 @@ void draw_cone_tri_calc(double height, double radius, int base_tri) {
         glEnd();
     }
 }
+#endif
 
 /* end of plant.c */
