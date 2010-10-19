@@ -27,15 +27,16 @@ int X_OFF = 10;	/* window x offset */
 int Y_OFF = 10;	/* window y offset */
 float rotY = 0;
 float rotZ = 0;
-int treeStep = 0;
+int treeStep = 1;
+bool orth = true;
 
 /* The dimensions of the viewing frustum */
-GLfloat fleft   = -1.0;
-GLfloat fright  =  1.0;
-GLfloat fbottom = -1.0;
-GLfloat ftop    =  1.0;
-GLfloat zNear   = -2.0;
-GLfloat zFar    = -7.0;
+GLfloat fleft   = -60.0;
+GLfloat fright  =  60.0;
+GLfloat fbottom = -60.0;
+GLfloat ftop    =  60.0;
+GLfloat zNear   = -100.0;
+GLfloat zFar    = 400.0;
 
 
 /* Global zoom factor.  Modified by user input. Initially 1.0 */
@@ -65,54 +66,26 @@ int main (int argc, char** argv)
   return 0;
   
 }
-
-void init() {
-  glClearColor(0.0, 0.0, 0.0, 0.0);  
-  glMatrixMode(GL_PROJECTION);
-  glLoadIdentity();
-  glOrtho(-40.0, 40.0, -40.0, 40.0, -40.0, 40.0);
-}
-
 void toOrtho()
 {
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glOrtho(-40.0, 40.0, -40.0, 40.0, -40.0, 40.0);
+    glOrtho(fleft, fright, fbottom, ftop, zNear, zFar);
 }
+
+void init() {
+  glClearColor(0.0, 0.0, 0.0, 0.0);  
+    toOrtho();
+}
+
+
 
 void toFrust()
 {
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glFrustum(-40.0, 40.0, -40.0, 40.0, -40.0, 40.0);
-}
-
-/*
- * The rotation is specified in degrees about a certain axis of
- * the original model.
- *
- * AXIS should be either X_AXIS, Y_AXIS, or Z_AXIS.
- *
- * Positive degrees rotate in the counterclockwise direction.
- */
-void rotateCamera(double deg, Axis a) {
-	double x, y, z;
-
-	x = 0;
-	y = 0;
-	z = 0;
-
-	if (a == X_AXIS) {
-		x = 1.0f;
-	} else if (a == Y_AXIS) {
-	    y = 1.0f;
-		//rotatey(deg);
-	} else if (a == Z_AXIS) {
-        z = 1.0f;
-		//rotatez(deg);
-	}
- 
-	glRotatef(deg, x, y, z);
+    //glFrustum(-40.0, 40.0, -40.0, 40.0, 0.0, 40.0);
+    gluPerspective(80, 4.0/3.0, 10, 400); 
 }
 
 void rotateTree(double deg, Axis a)
@@ -150,38 +123,15 @@ void myKeyHandler(unsigned char ch, int x, int y) {
 		    rotateTree(-5, Y_AXIS);
 		    break;
 		    
-		case ',':
-		    std::cout<<"ROTATING X"<<std::endl;
-			rotateCamera(5, X_AXIS);
-			break;
-
-		case '<':
-		    std::cout<<"ROTATING -X"<<std::endl;
-			rotateCamera(-5, X_AXIS);
-			break;
-
-		case '.':
-		    std::cout<<"ROTATING Y"<<std::endl;
-			rotateCamera(5, Y_AXIS);
-			break;
-
-		case '>':
-    		std::cout<<"ROTATING -Y"<<std::endl;
-			rotateCamera(-5, Y_AXIS);
-			break;
-
-		case ';':
-			std::cout<<"ROTATING Z"<<std::endl;
-			rotateCamera(5, Z_AXIS);
-			break;
-
-		case ':':
-			std::cout<<"ROTATING -Z"<<std::endl;
-			rotateCamera(-5, Z_AXIS);
-			break;
+	    case '.':
+            rotateTree(5, Z_AXIS);
+	        break;
+	        
+        case '>':
+            rotateTree(-5, Z_AXIS);
+            break;
 			
 	    case 'p':
-	        static bool orth = false;
 	        if (!orth)
 	        {
 	            std::cout<<"Switching to orthographic view"<<std::endl;
@@ -197,12 +147,12 @@ void myKeyHandler(unsigned char ch, int x, int y) {
             }
 	        break;	
 	        
-        case 'n':
+        case 'a':
             ++treeStep;
             std::cout<<"Incremented the fractal step by one"<<std::endl;
             break;
             
-        case 'm':
+        case 's':
             if (treeStep > 0)
             {
                 std::cout<<"Decremented the fractal step by one"<<std::endl;
@@ -242,9 +192,16 @@ void display() {
 	glEnable(GL_DEPTH_TEST);
 	glMatrixMode(GL_MODELVIEW);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    initMatrixStack();
+
+    if (!orth)
+        translate(0, 0, -80);
     
-	drawPlant(0, rotY, treeStep);
-	//draw_cone_tri_calc(5, 5, 5);
+    push();
+	drawPlant(0, rotY, rotZ, treeStep);
+	pop();
+	
+
 	
     glFlush();  /* Flush all executed OpenGL ops finish */
 
@@ -253,37 +210,6 @@ void display() {
      * function every time we are done drawing.
      */
     glutSwapBuffers();
-}
-
-void draw_cone_tri_calc(double height, double radius, int base_tri) {
-	/* ADD YOUR CODE HERE */
-    // >= 3 use isoceles triangles with the legs as radii
-	/* All arguments here are pointers */
-
-    // get the angle for each triangle
-    double theta = 2 * 3.14159 / base_tri;
-    int q = 0;
-    //printf("Theta %d", theta);
-    for (q = 0; q < base_tri; ++q)
-    {
-        // draw the base triangle, the ones which approximate the circular base of a cone
-        // this is somewhat inefficient as it reuses verticies
-    	glBegin(GL_TRIANGLES);
-        // pick color based on loop var
-    	glColor3f( (q%3 == 0 ? 1 : 0), (q%3 == 1 ? 1 : 0), (q%3 == 2 ? 1 : 0));
-	    glVertex3f(0, 0, 0);
-	    glVertex3f(radius * cos(q * theta), radius * sin(q * theta), 0);
-	    glVertex3f(radius * cos( (q + 1)  * theta), radius * sin( (q + 1) * theta), 0);
-        glEnd();
-
-        // draw the triangle that make up the cone
-    	glBegin(GL_TRIANGLES);
-    	glColor3f( (q%3 == 2 ? 1 : 0), (q%3 == 1 ? 1 : 0), (q%3 == 0 ? 1 : 0));
-	    glVertex3f(0, 0, height);
-	    glVertex3f(radius * cos(q * theta), radius * sin(q * theta), 0);
-	    glVertex3f(radius * cos( (q + 1)  * theta), radius * sin( (q + 1) * theta), 0);
-        glEnd();
-    }
 }
 
 /* end of plant.c */
