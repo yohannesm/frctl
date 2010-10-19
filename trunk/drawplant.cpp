@@ -12,6 +12,7 @@
 #endif
 #include <math.h>
 #include <assert.h>
+#include <time.h>
 
 #include <iostream>
 #include "Matrix.h"
@@ -26,7 +27,6 @@
 std::stack<GLfloat*> matrixStack;
 static GLfloat curMatrix[16];
 static int scale_level = -1;
-static GLfloat curTranslation[] = {0, 0, 0};
 
 /* Takes a 2D matrix in row-major order, and loads the 3D matrix which
    does the same trasformation into the OpenGL MODELVIEW matrix, in
@@ -105,6 +105,7 @@ void pop()
     GLfloat* temp = matrixStack.top();
     mat_copy(curMatrix, temp);
     matrixStack.pop(); 
+    load3DMatrix(curMatrix);
     delete[] temp;
 }
 
@@ -182,12 +183,68 @@ void rotatey(GLfloat angle){
     load3DMatrix(curMatrix);
 }
 
+void rotateAtOriginx(GLfloat angle)
+{
+    GLfloat temp[16];
+    mat_copy(temp, curMatrix);
+    loadIdentity();
+    
+    rotatex(angle);
+    
+    GLfloat holder[16];
+    mat_copy(holder, curMatrix);
+    
+    mat_multiplym(temp, holder, 4, curMatrix);
+    load3DMatrix(curMatrix);
+}
+
+void rotateAtOriginy(GLfloat angle)
+{
+    GLfloat temp[16];
+    mat_copy(temp, curMatrix);
+    loadIdentity();
+    
+    rotatey(angle);
+    
+    GLfloat holder[16];
+    mat_copy(holder, curMatrix);
+    
+    mat_multiplym(temp, holder, 4, curMatrix);
+    load3DMatrix(curMatrix);
+}
+
+void rotateAtOriginz(GLfloat angle)
+{
+    GLfloat temp[16];
+    mat_copy(temp, curMatrix);
+    loadIdentity();
+    
+    rotatez(angle);
+    
+    GLfloat holder[16];
+    mat_copy(holder, curMatrix);
+    
+    mat_multiplym(temp, holder, 4, curMatrix);
+    load3DMatrix(curMatrix);
+}
+
 void testRotate()
 {
     rotatey(5);
     rotatez(5);
 }
 
+GLfloat getRandAngle(GLfloat angle)
+{
+    static int m = 1;
+    srand( (unsigned)time( NULL ) * m * PI);
+    ++m;
+    GLfloat r = ((GLfloat)rand()) / ((GLfloat)RAND_MAX);
+    r *= 2;
+    r -= 1;
+    r *= angle;
+    return r;
+}
 void drawLeaf(int i) {
 	/* ADD YOUR CODE to make the 2D leaf a 3D extrusion */
 	
@@ -330,7 +387,8 @@ void drawBranch(int i, GLfloat* vec) {
 void drawBranch3D(GLfloat height, GLfloat botArea, GLfloat topArea)
 {
 #if 1
-  std::cout << "drawBranch3D(" << height << " , " << botArea << ", " << topArea << ")" << std::endl;
+    glColor3f(0.54,0.27,0.07); 
+    std::cout << "drawBranch3D(" << height << " , " << botArea << ", " << topArea << ")" << std::endl;
 	GLfloat botSideLen = sqrt(botArea);
 	GLfloat topSideLen = sqrt(topArea);
     GLfloat vertexList[] = { 
@@ -454,12 +512,8 @@ void drawBranch3D(GLfloat height, GLfloat botArea, GLfloat topArea)
     GLfloat fullBranchVec[] = {0, height, 0, 0};
     GLfloat curBranchVec[] = {0, 0, 0, 0};
     mat_multiplyv(curMatrix, fullBranchVec, 4, curBranchVec);
-    vec_copy(fullBranchVec, curBranchVec, 4);
+    //vec_copy(fullBranchVec, curBranchVec, 4);
 
-    curTranslation[0] += curBranchVec[0];
-    curTranslation[1] += curBranchVec[1];
-    curTranslation[2] += curBranchVec[2];
-    //print_vec(curBranchVec, 4);
     translate(curBranchVec[0], curBranchVec[1], curBranchVec[2]);
 }
 
@@ -470,7 +524,7 @@ void drawRecBranch (int i, GLfloat roty, int growth)
     {
         //rotatey(roty);
         GLfloat s = 1.0 + growth * .5;
-        drawBranch3D(12 * s, 8 * s, 4 * s);
+        drawBranch3D(6 * s, 4 * s, 2 * s);
     }
     else
     {
@@ -498,23 +552,80 @@ void drawRecLeaf (int i, GLfloat roty)
         print_mat(curMatrix, 4);
         drawRecBranch(i - 1, roty, 0);
         print_mat(curMatrix, 4);
+        
         push();
-        rotatez(30);
+        rotateAtOriginz(30);
+        rotateAtOriginx(30);
         drawRecBranch(i -1, roty, 0);
         print_mat(curMatrix, 4);
         push();
         drawRecLeaf(i - 1, roty);
         pop();
-        pop();
-
-        print_mat(curMatrix, 4);
-
-        drawRecBranch(i -1, roty, 0);
-
-        push();
-        drawRecLeaf(i - 1, roty);
         pop();
         
+        push();
+        rotateAtOriginx(-30);
+        drawRecBranch(i -1, roty, 0);
+        print_mat(curMatrix, 4);
+        push();
+        drawRecLeaf(i - 1, roty);
+        pop();
+        pop();
+#if 0
+        push();
+        rotateAtOriginz(-45);
+        rotateAtOriginx(45);
+        drawRecBranch(i -1, roty, 0);
+        print_mat(curMatrix, 4);
+        push();
+        drawRecLeaf(i - 1, roty);
+        pop();
+        pop();
+
+
+        push();
+        rotateAtOriginz(45);
+        rotateAtOriginx(-45);
+        drawRecBranch(i -1, roty, 0);
+        print_mat(curMatrix, 4);
+        push();
+        drawRecLeaf(i - 1, roty);
+        pop();
+        pop();
+        
+        print_mat(curMatrix, 4);
+
+        drawRecBranch(i - 1, roty, 0);
+#endif
+        push();
+        rotateAtOriginz(-25);
+        rotateAtOriginx(-35);
+        drawRecBranch(i -1, roty, 0);
+        print_mat(curMatrix, 4);
+        push();
+        drawRecLeaf(i - 1, roty);
+        pop();
+        pop();
+
+        push();
+        rotateAtOriginz(-45);
+        rotateAtOriginx(15);
+        drawRecBranch(i -1, roty, 0);
+        print_mat(curMatrix, 4);
+        push();
+        drawRecLeaf(i - 1, roty);
+        pop();
+        pop();
+        
+        push();
+        rotateAtOriginz(20);
+        rotateAtOriginx(25);
+        drawRecBranch(i -1, roty, 0);
+        print_mat(curMatrix, 4);
+        push();
+        drawRecLeaf(i - 1, roty);
+        pop();
+        pop();
         
     }
 }
@@ -546,8 +657,9 @@ void drawPlant(int i, float roty, float rotz) {
     push();
     // this rotation takes care of the global rotation
     //rotatey(roty);
-    translate(0, -20, 0);
-    drawTree3D(1, roty);
+    translate(0, -25, 0);
+    rotateAtOriginy(roty);
+    drawTree3D(4, roty);
     pop();
 
 #else
