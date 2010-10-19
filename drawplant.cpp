@@ -24,7 +24,7 @@
 #define PI 3.14159265
 
 std::stack<GLfloat*> matrixStack;
-extern GLfloat curMatrix[16];
+static GLfloat curMatrix[16];
 static int scale_level = -1;
 static GLfloat curTranslation[] = {0, 0, 0};
 
@@ -67,23 +67,6 @@ void load3DMatrix(
 	glLoadMatrixf(M3D);
 
 }
-void load3DMatrixp(
-		GLfloat m00, GLfloat m01, GLfloat m02, GLfloat m03,
-		GLfloat m10, GLfloat m11, GLfloat m12, GLfloat m13,
-		GLfloat m20, GLfloat m21, GLfloat m22, GLfloat m23,
-		GLfloat m30, GLfloat m31, GLfloat m32, GLfloat m33) {
-
-	GLfloat M3D [16];  
-
-	M3D[0] = m00;  M3D[1] = m10; M3D[2] = m20; M3D[3] = m30;
-	M3D[4] = m01;  M3D[5] = m11; M3D[6] = m21; M3D[7] = m31;
-	M3D[8] = m02;  M3D[9] = m12; M3D[10] = m22; M3D[11] = m32;
-	M3D[12] = m03; M3D[13] = m13; M3D[14] = m23; M3D[15] = m33;
-
-	glMatrixMode(GL_PROJECTION);
-	glLoadMatrixf(M3D);
-
-	}
 
 void load3DMatrix(GLfloat* temp)
 {
@@ -114,6 +97,7 @@ void push()
     GLfloat* pushMatrix = new GLfloat[16];
     mat_copy(pushMatrix, curMatrix);
     matrixStack.push(pushMatrix);
+    //delete[] pushMatrix;
 }
 
 void pop()
@@ -343,8 +327,64 @@ void drawBranch(int i, GLfloat* vec) {
     }
 }
 
-void drawBranch3D(int i)
+void drawBranch3D(GLfloat height, GLfloat botArea, GLfloat topArea)
 {
+#if 1
+  std::cout << "drawBranch3D(" << height << " , " << botArea << ", " << topArea << ")" << std::endl;
+	GLfloat botSideLen = sqrt(botArea);
+	GLfloat topSideLen = sqrt(topArea);
+    GLfloat vertexList[] = { 
+         botSideLen/2, 0, botSideLen/2,
+         botSideLen/2, 0, -botSideLen/2,
+         -botSideLen/2, 0, -botSideLen/2,
+         -botSideLen/2, 0, botSideLen/2,
+
+         topSideLen/2, height, topSideLen/2,
+         -topSideLen/2, height, topSideLen/2,
+         -topSideLen/2, height, -topSideLen/2,
+         topSideLen/2, height, -topSideLen/2
+	 };
+    GLfloat indexList[] = {
+     	  0, 4, 7, 1,
+	  1, 7, 6, 2, 
+	  2, 6, 5 , 3, 
+	  3, 5, 4, 0
+    };
+
+    glBegin(GL_QUADS);
+    
+    glVertex3f( vertexList[0], vertexList[1], vertexList[2]);
+    glVertex3f( vertexList[3], vertexList[4], vertexList[5]);
+    glVertex3f( vertexList[6], vertexList[7], vertexList[8]);
+    glVertex3f( vertexList[9], vertexList[10], vertexList[11]);
+    
+    glEnd();
+        
+    glBegin(GL_QUADS);
+    
+    glVertex3f( vertexList[12], vertexList[13], vertexList[14]);
+    glVertex3f( vertexList[15], vertexList[16], vertexList[17]);
+    glVertex3f( vertexList[18], vertexList[19], vertexList[20]);
+    glVertex3f( vertexList[21], vertexList[22], vertexList[23]);
+    
+    glEnd();
+    for(int q = 0; q < 4; ++q)
+	{
+	    glColor3f(.68 - q * .1, .40 - q * .1, .07);
+	    int ind1 = indexList[q * 4];
+	    int ind2 = indexList[q * 4 + 1];
+	    int ind3 = indexList[q * 4 + 2];
+	    int ind4 = indexList[q * 4 + 3];
+
+	    glBegin(GL_QUADS);
+	    glVertex3f(vertexList[ind1 * 3], vertexList[ind1 * 3 + 1], vertexList[ind1 * 3 + 2]);
+	    glVertex3f(vertexList[ind2 * 3], vertexList[ind2 * 3 + 1], vertexList[ind2 * 3 + 2]);
+	    glVertex3f(vertexList[ind3 * 3], vertexList[ind3 * 3 + 1], vertexList[ind3 * 3 + 2]);
+	    glVertex3f(vertexList[ind4 * 3], vertexList[ind4 * 3 + 1], vertexList[ind4 * 3 + 2]);
+	    glEnd();
+	}
+
+#else
     std::cout<<"drawBranch3D("<<i<<")"<<std::endl;
     GLfloat vertexList[] = { 
         //bottom
@@ -408,9 +448,10 @@ void drawBranch3D(int i)
 	    glVertex3f(vertexList[ind4 * 3], vertexList[ind4 * 3 + 1], vertexList[ind4 * 3 + 2]);
 	    glEnd();
 	}
+    #endif
 	
 	// move the turtle along the correct vector
-    GLfloat fullBranchVec[] = {0, 24, 0, 0};
+    GLfloat fullBranchVec[] = {0, height, 0, 0};
     GLfloat curBranchVec[] = {0, 0, 0, 0};
     mat_multiplyv(curMatrix, fullBranchVec, 4, curBranchVec);
     vec_copy(fullBranchVec, curBranchVec, 4);
@@ -418,23 +459,25 @@ void drawBranch3D(int i)
     curTranslation[0] += curBranchVec[0];
     curTranslation[1] += curBranchVec[1];
     curTranslation[2] += curBranchVec[2];
+    //print_vec(curBranchVec, 4);
     translate(curBranchVec[0], curBranchVec[1], curBranchVec[2]);
 }
 
-void drawRecBranch (int i, GLfloat roty)
+void drawRecBranch (int i, GLfloat roty, int growth)
 {
     std::cout<<"drawRecBranch("<<i<<")"<<std::endl;
     if (i == 0)
     {
-       // push();
         //rotatey(roty);
-        drawBranch3D(0);
-       // pop();
+        GLfloat s = 1.0 + growth * .5;
+        drawBranch3D(12 * s, 8 * s, 4 * s);
     }
     else
     {
-        // grow?
-        drawRecBranch(i - 1, roty);
+    
+   
+   drawRecBranch(i - 1, roty, growth + 1);
+
     }
 }
 
@@ -444,28 +487,35 @@ void drawRecLeaf (int i, GLfloat roty)
     if (i == 0)
     {
     
-      //  push();
+        push();
         //rotatey(roty);
         drawLeaf3D(0);
-      //  pop();
+        pop();
     }
     else
     {
-        scale_level += 1;
-        GLfloat s = pow(.5, scale_level);
-        std::cout<<"scale_level: "<<scale_level<<" s: "<<s<<std::endl;
-        scale(s, s, s);
-        drawRecBranch(i - 1, roty);
         
+        print_mat(curMatrix, 4);
+        drawRecBranch(i - 1, roty, 0);
+        print_mat(curMatrix, 4);
+        push();
+        rotatez(30);
+        drawRecBranch(i -1, roty, 0);
+        print_mat(curMatrix, 4);
+        push();
+        drawRecLeaf(i - 1, roty);
+        pop();
+        pop();
+
+        print_mat(curMatrix, 4);
+
+        drawRecBranch(i -1, roty, 0);
+
         push();
         drawRecLeaf(i - 1, roty);
         pop();
         
-        push();
-        rotatez(45);
-        drawRecLeaf(i - 1, roty);
-        pop();
-        scale_level -= 1;
+        
     }
 }
 
@@ -489,16 +539,16 @@ void drawTree3D(int i, GLfloat roty)
  * any other necessary arguments.
  */
 void drawPlant(int i, float roty, float rotz) {
-    //std::cout<<"drawPlant("<<i<<", "<<roty<<", "<<rotz<<")"<<std::endl;
-    //initMatrixStack();
+    std::cout<<"drawPlant("<<i<<", "<<roty<<", "<<rotz<<")"<<std::endl;
+    initMatrixStack();
 
 #if 1
-    //push();
+    push();
     // this rotation takes care of the global rotation
     //rotatey(roty);
     translate(0, -20, 0);
-    drawTree3D(2, roty);
-    //pop();
+    drawTree3D(1, roty);
+    pop();
 
 #else
     push();
