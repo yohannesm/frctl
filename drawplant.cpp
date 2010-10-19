@@ -24,7 +24,7 @@
 #define PI 3.14159265
 
 std::stack<GLfloat*> matrixStack;
-static GLfloat curMatrix[16];
+extern GLfloat curMatrix[16];
 static int scale_level = -1;
 static GLfloat curTranslation[] = {0, 0, 0};
 
@@ -67,6 +67,23 @@ void load3DMatrix(
 	glLoadMatrixf(M3D);
 
 }
+void load3DMatrixp(
+		GLfloat m00, GLfloat m01, GLfloat m02, GLfloat m03,
+		GLfloat m10, GLfloat m11, GLfloat m12, GLfloat m13,
+		GLfloat m20, GLfloat m21, GLfloat m22, GLfloat m23,
+		GLfloat m30, GLfloat m31, GLfloat m32, GLfloat m33) {
+
+	GLfloat M3D [16];  
+
+	M3D[0] = m00;  M3D[1] = m10; M3D[2] = m20; M3D[3] = m30;
+	M3D[4] = m01;  M3D[5] = m11; M3D[6] = m21; M3D[7] = m31;
+	M3D[8] = m02;  M3D[9] = m12; M3D[10] = m22; M3D[11] = m32;
+	M3D[12] = m03; M3D[13] = m13; M3D[14] = m23; M3D[15] = m33;
+
+	glMatrixMode(GL_PROJECTION);
+	glLoadMatrixf(M3D);
+
+	}
 
 void load3DMatrix(GLfloat* temp)
 {
@@ -97,7 +114,6 @@ void push()
     GLfloat* pushMatrix = new GLfloat[16];
     mat_copy(pushMatrix, curMatrix);
     matrixStack.push(pushMatrix);
-    //delete[] pushMatrix;
 }
 
 void pop()
@@ -410,10 +426,10 @@ void drawRecBranch (int i, GLfloat roty)
     std::cout<<"drawRecBranch("<<i<<")"<<std::endl;
     if (i == 0)
     {
-        push();
-        rotatey(roty);
+       // push();
+        //rotatey(roty);
         drawBranch3D(0);
-        pop();
+       // pop();
     }
     else
     {
@@ -428,10 +444,10 @@ void drawRecLeaf (int i, GLfloat roty)
     if (i == 0)
     {
     
-        push();
-        rotatey(roty);
+      //  push();
+        //rotatey(roty);
         drawLeaf3D(0);
-        pop();
+      //  pop();
     }
     else
     {
@@ -473,16 +489,16 @@ void drawTree3D(int i, GLfloat roty)
  * any other necessary arguments.
  */
 void drawPlant(int i, float roty, float rotz) {
-    std::cout<<"drawPlant("<<i<<", "<<roty<<", "<<rotz<<")"<<std::endl;
-    initMatrixStack();
+    //std::cout<<"drawPlant("<<i<<", "<<roty<<", "<<rotz<<")"<<std::endl;
+    //initMatrixStack();
 
 #if 1
-    push();
+    //push();
     // this rotation takes care of the global rotation
     //rotatey(roty);
     translate(0, -20, 0);
     drawTree3D(2, roty);
-    pop();
+    //pop();
 
 #else
     push();
