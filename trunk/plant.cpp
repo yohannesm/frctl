@@ -27,6 +27,7 @@ int X_OFF = 10;	/* window x offset */
 int Y_OFF = 10;	/* window y offset */
 float rotY = 0;
 float rotZ = 0;
+int treeStep = 0;
 
 /* The dimensions of the viewing frustum */
 GLfloat fleft   = -1.0;
@@ -70,6 +71,20 @@ void init() {
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   glOrtho(-40.0, 40.0, -40.0, 40.0, -40.0, 40.0);
+}
+
+void toOrtho()
+{
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glOrtho(-40.0, 40.0, -40.0, 40.0, -40.0, 40.0);
+}
+
+void toFrust()
+{
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glFrustum(-40.0, 40.0, -40.0, 40.0, -40.0, 40.0);
 }
 
 /*
@@ -164,6 +179,36 @@ void myKeyHandler(unsigned char ch, int x, int y) {
 			std::cout<<"ROTATING -Z"<<std::endl;
 			rotateCamera(-5, Z_AXIS);
 			break;
+			
+	    case 'p':
+	        static bool orth = false;
+	        if (!orth)
+	        {
+	            std::cout<<"Switching to orthographic view"<<std::endl;
+	            toOrtho();
+	            orth = true;
+            }
+            else
+            {
+                std::cout<<"Switching to frustum view"<<std::endl;
+                // parameters in toFrust need to change
+                toFrust();
+                orth = false;
+            }
+	        break;	
+	        
+        case 'n':
+            ++treeStep;
+            std::cout<<"Incremented the fractal step by one"<<std::endl;
+            break;
+            
+        case 'm':
+            if (treeStep > 0)
+            {
+                std::cout<<"Decremented the fractal step by one"<<std::endl;
+                --treeStep;
+            }
+            break;
 
         case 'q':
             endPlant(0);
@@ -198,7 +243,7 @@ void display() {
 	glMatrixMode(GL_MODELVIEW);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
-	drawPlant(0, rotY, rotZ);
+	drawPlant(0, rotY, treeStep);
 	//draw_cone_tri_calc(5, 5, 5);
 	
     glFlush();  /* Flush all executed OpenGL ops finish */

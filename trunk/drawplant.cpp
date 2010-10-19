@@ -363,6 +363,45 @@ void drawLeaf3D (int i)
 	}
 }
 
+void drawFruit3D()
+{
+    GLfloat vertexList[] = {
+        0.0, 0.0, 0.0, //top
+        0.0, -4.0, 4.0, // top diamond
+        -4.0, -4.0, 0, // left diamond
+        0.0, -4.0, -4.0, //bot diamond
+        4.0, -4.0, 0.0, //right diamond
+        0.0, -8.0, 0.0 //bot
+    };
+    
+    int indexList[] = {
+        0, 4, 1,
+        0, 1, 2,
+        0, 2, 3,
+        0, 3, 4,
+        5, 1, 4,
+        5, 2, 1,
+        5, 3, 2,
+        5, 4, 3
+    };
+    
+    for (int q = 0; q < 1; ++q)
+    {
+        glColor3f( (q%3 == 0 ? 1 : 0), (q%3 == 1 ? 1 : 0), (q%3 == 2 ? 1 : 0));
+        //glColor3f(.6 + q * .03, .10, .10);
+        int index0 = indexList[q * 3];
+        int index1 = indexList[q * 3 + 1];
+        int index2 = indexList[q * 3 + 2];
+        
+        cout<<index0<<index1<<index2<<std::endl;
+        glBegin(GL_TRIANGLES);
+        glVertex3f(vertexList[index0], vertexList[index0 + 1], vertexList[index0 + 2]);
+        glVertex3f(vertexList[index1], vertexList[index1 + 1], vertexList[index1 + 2]);
+        glVertex3f(vertexList[index2], vertexList[index2 + 1], vertexList[index2 + 2]);
+        glEnd();
+    }
+}
+
 void drawBranch(int i, GLfloat* vec) {
 	/* ADD YOUR CODE to make the 2D branch a 3D extrusion */
 	if (i == 0)
@@ -556,15 +595,15 @@ void drawRecLeaf (int i)
     else
     {
         drawRecBranch(i - 1, 0);
-        //drawNextSection(i, 15.0, 30.0);
-        //drawNextSection(i, -30.0, 25.0);
-        //drawNextSection(i, -10.0, -20.0);
-        //drawNextSection(i, 15.0, -30.0);
+        drawNextSection(i, 15.0, 30.0);
+        drawNextSection(i, -30.0, 25.0);
+        drawNextSection(i, -10.0, -20.0);
+        drawNextSection(i, 15.0, -30.0);
         drawNextSection(i, 0, 0);
-        drawNextSection(i, 0, 45);
-        drawNextSection(i, 0, -45);
-        drawNextSection(i, 45, 0);
-        drawNextSection(i, -45, 0);
+        //drawNextSection(i, 0, 45);
+        //drawNextSection(i, 0, -45);
+        //drawNextSection(i, 45, 0);
+        //drawNextSection(i, -45, 0);
         
         //drawRecLeaf(i - 1);
     }
@@ -589,14 +628,16 @@ void drawTree3D(int i)
  * ADD YOUR CODE and modify the function to take an L-system depth and
  * any other necessary arguments.
  */
-void drawPlant(int i, float roty, float rotz) {
-    std::cout<<"drawPlant("<<i<<", "<<roty<<", "<<rotz<<")"<<std::endl;
+void drawPlant(int i, float roty, int step) {
+    std::cout<<"drawPlant("<<i<<", "<<roty<<", "<<step<<")"<<std::endl;
     initMatrixStack();
     push();
     translate(0, -25, 0);
     // this rotation takes care of the global rotation
-    rotateAtOriginy(roty);
-    drawTree3D(2);
+    // rotateAtOriginy(roty);
+    rotatey(roty);
+    drawTree3D(step);
+    //drawFruit3D();
     pop();
 }
 

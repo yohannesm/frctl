@@ -8,7 +8,7 @@ const GLfloat ident[16] = {1.0, 0, 0, 0,
 
 /* Functions implemented in drawplant.cpp */
 
-void drawPlant(int, float, float);
+void drawPlant(int, float, int);
 void drawTree(int i);
 void drawLeaf(int i);
 void drawBranch(int i, GLfloat*);
