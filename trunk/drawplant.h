@@ -32,4 +32,7 @@ void rotatey(GLfloat angle);
 void testRotate();
 void load3DMatrix(GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat);
 
+void rotateAtOriginx(GLfloat angle);
+void rotateAtOriginy(GLfloat angle);
+void rotateAtOriginz(GLfloat angle);
 #endif	/* _DRAWPLANT_H_ */
