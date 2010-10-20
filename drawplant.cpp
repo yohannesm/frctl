@@ -26,7 +26,6 @@
 
 std::stack<GLfloat*> matrixStack;
 static GLfloat curMatrix[16];
-static int scale_level = -1;
 
 /* Takes a 2D matrix in row-major order, and loads the 3D matrix which
    does the same trasformation into the OpenGL MODELVIEW matrix, in
@@ -85,11 +84,7 @@ void initMatrixStack ()
                     temp[8], temp[9], temp[10], temp[11],
                     temp[12], temp[13], temp[14], temp[15]);
                     
-    //curMatrix = new GLfloat[16];
     mat_copy(curMatrix, ident);
-    //std::cout<<"inits"<<std::endl;
-    //print_mat(curMatrix, 4);
-    //delete[] temp;
 }
 
 void push()
@@ -97,7 +92,6 @@ void push()
     GLfloat* pushMatrix = new GLfloat[16];
     mat_copy(pushMatrix, curMatrix);
     matrixStack.push(pushMatrix);
-    //delete[] pushMatrix;
 }
 
 void pop()
@@ -284,7 +278,6 @@ void drawLeaf(int i) {
 
 void drawLeaf3D (int i)
 {
-    std::cout<<"drawLeaf3D("<<i<<")"<<std::endl;
     GLfloat vertexList[] = 
     {
         // bottom
@@ -411,10 +404,6 @@ void drawFruit3D(GLfloat redLevel)
         int index1 = indexList[q * 3 + 1];
         int index2 = indexList[q * 3 + 2];
         
-        std::cout<<index0<<" "<<index1<<" "<<index2<<std::endl;
-        //print_vec(&vertexList[index0], 3);
-        //print_vec(&vertexList[index1], 3);
-        //print_vec(&vertexList[index2], 3);
         glBegin(GL_TRIANGLES);
         glVertex3f(vertexList[index0 * 3], vertexList[index0 * 3 + 1], vertexList[index0 * 3 + 2]);
         glVertex3f(vertexList[index1 * 3], vertexList[index1 * 3 + 1], vertexList[index1 * 3 + 2]);
@@ -453,7 +442,6 @@ void drawFlower3D()
         int index1 = indexList[q * 3 + 1];
         int index2 = indexList[q * 3 + 2];
         
-        std::cout<<index0<<" "<<index1<<" "<<index2<<std::endl;
         //print_vec(&vertexList[index0], 3);
         //print_vec(&vertexList[index1], 3);
         //print_vec(&vertexList[index2], 3);
@@ -489,7 +477,6 @@ void drawBranch(int i, GLfloat* vec) {
 void drawBranch3D(GLfloat height, GLfloat botArea, GLfloat topArea)
 {
     glColor3f(0.54,0.27,0.07); 
-    std::cout << "drawBranch3D(" << height << " , " << botArea << ", " << topArea << ")" << std::endl;
 	GLfloat botSideLen = sqrt(botArea);
 	GLfloat topSideLen = sqrt(topArea);
     GLfloat vertexList[] = { 
@@ -624,7 +611,6 @@ void drawNextTopGrowth(int i, GLfloat xangle, GLfloat zangle)
     rotateAtOriginz(zangle);
     rotateAtOriginx(xangle);
     drawRecBranch(i -1, 0);
-    //print_mat(curMatrix, 4);
     push();
     drawRecLeaf(i - 1);
     pop();
@@ -642,7 +628,6 @@ void drawNextSideGrowth(int i, GLfloat xangle, GLfloat zangle)
 
 void drawRecBranch (int i, int growth)
 {
-    std::cout<<"drawRecBranch("<<i<<")"<<std::endl;
     if (i == 0)
     {
         GLfloat s = 1.0 + growth * 1.25;
@@ -665,7 +650,6 @@ void drawRecBranch (int i, int growth)
 
 void drawRecLeaf (int i)
 {
-    std::cout<<"drawRecLeaf("<<i<<")"<<std::endl;
     if (i == 0)
     {
         push();
@@ -709,7 +693,6 @@ void drawTree3D(int i)
  * any other necessary arguments.
  */
 void drawPlant(int i, float roty, float rotz, int step) {
-    std::cout<<"drawPlant("<<i<<", "<<roty<<", "<<step<<")"<<std::endl;
 
     push();
     translate(0, -40, 0);
@@ -726,7 +709,6 @@ void drawPlant(int i, float roty, float rotz, int step) {
         push();
         translate(-5 + q * 2, -5 + q * 2, 0);
         //drawFruit3D(q * .1);
-        std::cout<<q * .1<<std::endl;
         pop();
     }
     
@@ -759,16 +741,12 @@ void mat_multiplyv(GLfloat* matrix, GLfloat* vector, int dim, GLfloat* result ){
 
 void mat_multiplym(GLfloat* m1, GLfloat* m2, int dim, GLfloat* result ){
     zero_mat(result, dim);
-    //print_mat(result, 4);
-    //print_mat(m1, 4);
-    //print_mat(m2, 4);
     
     for(int r_row = 0; r_row < dim; ++r_row)
         for(int r_col=0; r_col < dim; ++r_col)
             for(int k = 0; k < dim; ++k)
                 result[r_row * dim + r_col] += m1[r_row * dim + k] * m2[k * dim + r_col];
                 
-    //print_mat(result, 4);
 }
 
 void mat_copy(GLfloat* m1, const GLfloat* m2, int dim)

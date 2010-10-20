@@ -8,20 +8,55 @@
  *
  * Group Members: Yohannes Himawan, David Lee
  * Email Addresses:yohannes.marcell@gmail.com dlee210151@gmail.com
+ Slip days: 1
  */
 
 
 L-system:
-F = move forward
-LO, L1, L2 = draw leaf
-T = draw terminating Leaf
-+ = turn right 
-- = turn left
-[ = push
-] = pop
-S = scale by 1/2
 
-Axiom: L0
-1. L0 -> F [ - F S L1] F [ + F S L2 ] F L0
-2. L1 -> F [ - F S L1 ] F [ + F T ] F L1
-3. L2 -> F [ - F T ] F [ + F S L2 ] F L2
+L = draw the leaf recursively
+Lt = draw terminating leaf
+Fr = draw Fruit
+B = draw Branch recursively
+Bt = draw terminating branch
+[ = Push
+] = Pop
+rz(angle) = rotate with respect to z axis by ("angle" degree);
+rx(angle) = rotate with respect to x axis by ("angle" degree);
+
+Axiom:
+ base: [ Fr ] [ T ]
+ rec Case:
+    B -> base = Bt
+         rec Case = B
+    Tg( zAng = 10) Sg(xAng=15) Sg(xAng=-10, zAng =-35) Sg(zAng=40) 
+    Tg( xAng = -25, zAng = 20) Tg (xAng = -25)
+
+
+Rule
+Tg  "growing the top" -> [ rz(zAng) rx(xAng) B [ L ] ]
+Sg  "growing the side" -> [ rz(zAng) rx(xAng) L ]
+
+
+Extra Credits feature:
+1. we draw the simple animation of our plants growing, this can be achieved by the 
+    key press 'g'(5)
+2. We include fruits(5)
+3. We improve the extrusion of the branch so it's using a smooth surface to make
+    it more realistic(5)
+4. We use a different complicated L-system to get interesting plants. (5)
+5. We use a 3D L-system and rotate in the y and x directions(10)
+6. We vary the colors of the polygon (5)
+
+Questions answer:
+1. The plant looks more realistic in 3D with perspective view as this is how we 
+   normally view things. Near branches appear larger while farther branches 
+   appear smaller. Also we notice that when we change the GL_PROJECTION mode 
+   the camera is translated to the origin so we need to translate the z value 
+   far back to get a decent view, as opposed to ortho perspective which has the 
+   camera at infinity. 
+2. This is because the ortho camera is at infinity while the perspective camera
+   is at the tip of some frustum. 
+
+
+//////////////////////////////////////////////////////////////////////////

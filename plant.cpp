@@ -18,6 +18,13 @@
 #include <assert.h>
 #include "common.h"
 #include "drawplant.h"
+#include <unistd.h>
+//#include "mouse.h"
+#define MOUSE_ROTATE_YX		0
+#define MOUSE_ROTATE_YZ		1
+#define MOUSE_ZOOM			2
+
+int mouse_mode = 0;
 
 /* GLOBAL VARAIBLES */
 /* (storage is actually allocated here) */
@@ -29,6 +36,7 @@ float rotY = 0;
 float rotZ = 0;
 int treeStep = 1;
 bool orth = true;
+int m_last_x, m_last_y;
 
 /* The dimensions of the viewing frustum */
 GLfloat fleft   = -60.0;
@@ -37,7 +45,6 @@ GLfloat fbottom = -60.0;
 GLfloat ftop    =  60.0;
 GLfloat zNear   = -100.0;
 GLfloat zFar    = 400.0;
-
 
 /* Global zoom factor.  Modified by user input. Initially 1.0 */
 GLfloat zoomFactor = 1.0; 
@@ -48,7 +55,9 @@ void init(void);
 int endPlant(int);
 void myKeyHandler(unsigned char ch, int x, int y);
 void rotateCamera(double deg, int axis);
-void draw_cone_tri_calc(double height, double radius, int base_tri);
+void growAnim();
+void myMouseButton(int button, int state, int x, int y);
+void myMouseMotion(int x, int y);
 
 enum Axis {X_AXIS, Y_AXIS, Z_AXIS};
 
@@ -62,6 +71,10 @@ int main (int argc, char** argv)
   init();
   glutDisplayFunc(display);
   glutKeyboardFunc(myKeyHandler); 
+
+  glutMouseFunc(myMouseButton);
+  glutMotionFunc(myMouseMotion);
+
   glutMainLoop();
   return 0;
   
@@ -104,6 +117,44 @@ void rotateTree(double deg, Axis a)
     }
 }
 
+void myMouseButton(int button, int state, int x, int y) {
+	if (state == GLUT_DOWN) {
+		m_last_x = x;
+		m_last_y = y;
+
+		if (button == GLUT_LEFT_BUTTON) {
+			mouse_mode = MOUSE_ROTATE_YX;
+	/*	} else if (button == GLUT_MIDDLE_BUTTON) {
+			mouse_mode = MOUSE_ROTATE_YZ;
+		} else if (button == GLUT_RIGHT_BUTTON) {
+			mouse_mode = MOUSE_ZOOM;
+		} */
+	}
+  }
+}
+void myMouseMotion(int x, int y) {
+	double d_x, d_y;	
+
+	d_x = x - m_last_x;
+	d_y = y - m_last_y;
+
+	m_last_x = x;
+	m_last_y = y;
+
+	if (mouse_mode == MOUSE_ROTATE_YX) {
+		/* scaling factors 
+		d_x /= 2.0;
+		d_y /= 2.0;
+
+		glRotatef(d_x, 0.0, 1.0, 0.0);	
+		glRotatef(-d_y, 1.0, 0.0, 0.0);	*/
+        rotateTree(d_x, Y_AXIS);
+        }
+
+    display();
+	glutPostRedisplay();
+    }
+
 /* Handle user input */
 void myKeyHandler(unsigned char ch, int x, int y) {
 	switch(ch) {
@@ -115,11 +166,13 @@ void myKeyHandler(unsigned char ch, int x, int y) {
 #endif
 		case '/':
 		    // rotate ccw about y axis
+            std::cout<<"Rotating the tree 5 degree counter clockwise about the y-axis"<<std::endl;
 		    rotateTree(5, Y_AXIS);
 			break;
 			
 		case '?':
 		    // rotate cw about y axis
+            std::cout<<"Rotating the tree 5 degree clockwise about the y-axis"<<std::endl;
 		    rotateTree(-5, Y_AXIS);
 		    break;
 		    
@@ -164,6 +217,11 @@ void myKeyHandler(unsigned char ch, int x, int y) {
             endPlant(0);
             break;
 
+        case 'g':
+     std::cout << "Starting the growing animation" << std::endl;
+            growAnim();
+            break;
+
 		default:
 			/* Unrecognized key press, just return */
 			return;
@@ -186,6 +244,14 @@ int endPlant(int status) {
   fflush(stdout);
 
   exit(status);
+}
+
+void growAnim(){
+     for(int i = 0; i < 5; ++i){
+        sleep(1);
+        treeStep = i;
+        display();
+     }
 }
 
 void display() {
