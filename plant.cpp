@@ -98,6 +98,7 @@ void toFrust()
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     //glFrustum(-40.0, 40.0, -40.0, 40.0, 0.0, 40.0);
+    glFrustum(fleft, fright, fbottom, ftop, zNear, zFar);
     gluPerspective(80, 4.0/3.0, 10, 400); 
 }
 
